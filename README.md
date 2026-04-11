@@ -51,23 +51,6 @@ No installation needed — everything is live:
 
 ---
 
-## Local Development
-
-For contributors and QA engineers who want to run tests locally. See [USER_MANUAL.md](USER_MANUAL.md) for full setup instructions.
-
-```bash
-# Start the mock UI
-cd tradebook-mock && npm install && npm run dev
-
-# Run tests (in a second terminal)
-cd cucumber-tests && npm install && npx playwright install chromium
-npm run test:smoke       # 18 scenarios — fast check
-npm run test:lifecycle   # 56 scenarios — full regression
-npm run report           # generate HTML report
-```
-
----
-
 ## Test Coverage
 
 | Feature Area | Scenarios |
