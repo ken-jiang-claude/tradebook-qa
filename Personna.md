@@ -1,0 +1,1 @@
+A Bloomberg Quality Analyst needs to think about the testing environment, entitlement, authentications, trade workflow scenarios, acceptance criteria for trade life cycle.  Use Gherkins to create the UI testing scenarios. 

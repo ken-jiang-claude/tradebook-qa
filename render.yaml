@@ -1,0 +1,24 @@
+services:
+  # ── Service 1: TradeBook Mock UI ────────────────────────────
+  - type: web
+    name: tradebook-mock
+    runtime: static
+    buildCommand: cd tradebook-mock && npm install && npm run build
+    staticPublishPath: tradebook-mock/dist
+    pullRequestPreviewsEnabled: false
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+
+  # ── Service 2: Living Docs (Cucumber HTML Report) ────────────
+  - type: web
+    name: tradebook-docs
+    runtime: static
+    buildCommand: echo "Static report — no build needed"
+    staticPublishPath: cucumber-tests/reports
+    pullRequestPreviewsEnabled: false
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache

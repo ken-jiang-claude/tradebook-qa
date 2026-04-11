@@ -1,0 +1,7 @@
+node_modules/
+.env
+reports/*.json
+reports/screenshots/
+playwright-report/
+test-results/
+# report.html is intentionally tracked — Render serves it as living docs

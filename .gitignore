@@ -1,0 +1,20 @@
+# Claude Code local settings
+.claude/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Environment files
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+cucumber-tests/reports/screenshots/
+cucumber-tests/playwright-report/
+cucumber-tests/test-results/
+cucumber-tests/reports/*.json
