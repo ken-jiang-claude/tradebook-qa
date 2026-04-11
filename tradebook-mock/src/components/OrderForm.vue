@@ -36,7 +36,7 @@
             <input v-model="form.price" data-testid="order-price" type="number" placeholder="150.00" />
           </div>
           <div class="field">
-            <label>Order Type</label>
+            <label>Order Type <span class="field-note">— Market orders require manual fill via ⚡ Simulator</span></label>
             <select v-model="form.orderType" data-testid="order-type">
               <option>Limit</option>
               <option>Market</option>

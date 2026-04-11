@@ -73,6 +73,10 @@ Click **LOGIN**. You will be taken to the Order Blotter.
 
 > **Note:** This mock environment supports **3 symbols only** — `AAPL`, `MSFT`, and `TSLA`. This is a known limitation of the mock UI. In a production environment, symbols are resolved dynamically via a live Security Master feed. Since this mock cannot connect to an external Security Master, the symbol list is hardcoded for testing purposes.
 
+## Market Orders
+
+> **Note:** The **Market** order type requires a manual fill via the **⚡ SIMULATOR** panel. Since this mock has no live market data stream, there is no real-time bid/ask price to execute against. After submitting a Market order, open the Simulator, enter a fill price and quantity, and click **Simulate Fill** to drive the order to a filled state.
+
 ---
 
 ## Placing a New Order
