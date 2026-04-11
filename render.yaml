@@ -6,6 +6,10 @@ services:
     buildCommand: cd tradebook-mock && npm install && npm run build
     staticPublishPath: tradebook-mock/dist
     pullRequestPreviewsEnabled: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     headers:
       - path: /*
         name: Cache-Control
