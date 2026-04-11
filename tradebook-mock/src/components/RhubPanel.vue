@@ -24,6 +24,7 @@
             />
             <button data-testid="rhub-search-submit" class="small-btn" @click="doSearch">SEARCH</button>
           </div>
+          <div class="field-note" style="margin-bottom:.5rem;">Order ID and ClOrdID are case-sensitive.</div>
 
           <!-- Result -->
           <div v-if="searchError" class="error-box">{{ searchError }}</div>
