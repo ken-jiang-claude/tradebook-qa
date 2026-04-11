@@ -238,6 +238,71 @@ Feature: Order Lifecycle
 - Tag `@known-issue` on any scenario that documents a gap (the test will show amber, not red)
 - You can apply multiple tags — there is no limit
 
+### Background — Shared Setup Across Scenarios
+
+Use `Background` to define steps that apply to **every scenario** in a feature file. This avoids repeating `Given the trader is logged in` at the top of every scenario.
+
+```gherkin
+Feature: Order Lifecycle
+
+  Background:
+    Given the trader is logged in        ← runs before every scenario in this file
+
+  Scenario: Buy order appears in blotter
+    When a buy order for 100 shares of AAPL at 150.00 is submitted
+    Then the order status should be "New"
+
+  Scenario: Sell order can be cancelled
+    When a sell order for 50 shares of MSFT at 390.00 is submitted
+    And the trader cancels the order
+    Then the order status should be "Canceled"
+```
+
+**When to use Background:**
+- All scenarios in the file share the same precondition (e.g. logged in, position seeded)
+- Do not use it if only some scenarios need the setup — use `Given` in those scenarios instead
+
+---
+
+### Scenario Outline — Data-Driven Testing
+
+Use `Scenario Outline` with an `Examples` table to run the same scenario with multiple sets of data. This is particularly useful in trading where you want to verify the same behaviour across different symbols, sides, or quantities — without duplicating the scenario.
+
+```gherkin
+Scenario Outline: Order submitted with valid symbol appears in blotter
+  Given the trader is logged in
+  When a <side> order for <qty> shares of <symbol> at <price> is submitted
+  Then the order status should be "New"
+
+  Examples:
+    | side | qty | symbol | price  |
+    | Buy  | 100 | AAPL   | 150.00 |
+    | Sell | 200 | MSFT   | 390.00 |
+    | Buy  |  50 | TSLA   | 250.00 |
+```
+
+This generates **three separate scenarios** — one per row — each appearing independently in the test report.
+
+**When to use Scenario Outline:**
+- Same behaviour, different input values (symbols, sides, quantities, prices)
+- Boundary testing (minimum qty, maximum qty, zero)
+- Do not use it to test fundamentally different behaviours — write separate scenarios instead
+
+---
+
+### Common Pitfalls — Trading Domain
+
+| Pitfall | Bad Example | Better |
+|---------|-------------|--------|
+| Testing the UI, not the behaviour | `When I click the green Submit button` | `When a buy order for 100 shares of AAPL at 150.00 is submitted` |
+| Vague values | `When some shares are filled` | `When a partial fill of 80 shares at 150.00 is simulated` |
+| Multiple behaviours in one scenario | Place + modify + cancel all in one scenario | One scenario per behaviour — failures are then specific |
+| Asserting intermediate transient states | `Then status is Pending New, then New` | Assert only the final stable state: `Then the order status should be "New"` |
+| Unexplained account references | `Given account ACC-9921 exists` | `Given the trader is logged in with account ACC-001` |
+| Leaking implementation detail | `When page.click('[data-testid="cxl-btn"]')` | `When the trader cancels the order` |
+
+---
+
 ### Do / Don't
 
 | Do | Don't |
