@@ -128,6 +128,65 @@ Profiles are defined in [cucumber-tests/cucumber.js](cucumber-tests/cucumber.js)
 
 ---
 
+## Tags Reference
+
+### All Tags Used in This Project
+
+| Tag | Purpose | Where Applied |
+|-----|---------|---------------|
+| `@smoke` | Fast CI gate — 18 critical-path scenarios run on every push | Scenario-level |
+| `@known-issue` | Intentional failure — documents an unsupported mock capability | Scenario-level |
+| `@edge-case` | Boundary or resilience scenario | Scenario-level |
+| `@session` | FIX session / connectivity scenarios | Scenario-level |
+| `@race-condition` | Concurrent event scenarios | Scenario-level |
+| `@multi-user` | Multi-session / permission scenarios | Scenario-level |
+| `@batch` | Settlement or batch timing scenarios | Scenario-level |
+
+### Feature-Level vs Scenario-Level
+
+Tags at feature level are **inherited by all scenarios** in that file. Tags at scenario level apply only to that scenario.
+
+```gherkin
+@smoke                              ← every scenario in this file is @smoke
+Feature: Order Lifecycle
+
+  Scenario: Buy order submitted     ← also @smoke (inherited)
+
+  @known-issue                      ← @smoke AND @known-issue
+  Scenario: Order during disconnect
+```
+
+### Boolean Filtering
+
+Run any combination using `and`, `or`, `not`:
+
+```bash
+cucumber-js --tags "@smoke"                        # smoke only
+cucumber-js --tags "@smoke and @edge-case"         # must have both tags
+cucumber-js --tags "@smoke or @lifecycle"          # either tag
+cucumber-js --tags "not @known-issue"              # exclude known issues
+cucumber-js --tags "@smoke and not @known-issue"   # smoke but not known issues
+```
+
+### Wiring a Tag to a Profile
+
+To create a profile that runs a specific tag, add it to `cucumber-tests/cucumber.js`:
+
+```js
+export const myProfile = {
+  ...default_,
+  tags: '@my-tag',
+}
+```
+
+Then run it with:
+
+```bash
+cucumber-js --profile myProfile
+```
+
+---
+
 ## Manual Mode
 
 Manual mode prints step-by-step instructions to the terminal instead of driving a browser. Use this when automated execution is not possible.

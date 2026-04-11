@@ -205,15 +205,38 @@ Feature: <What system capability is being tested>
 
 ### Tags used in this project
 
-| Tag | Meaning |
-|-----|---------|
-| `@smoke` | Included in the fast 18-scenario sanity gate |
-| `@known-issue` | Intentionally failing — documents an unsupported capability |
-| `@edge-case` | Boundary or resilience scenario |
-| `@session` | FIX session / connectivity related |
-| `@race-condition` | Concurrent event scenarios |
-| `@multi-user` | Multi-session / permission scenarios |
-| `@batch` | Settlement or batch timing scenarios |
+| Tag | Meaning | Used By |
+|-----|---------|---------|
+| `@smoke` | Included in the fast 18-scenario sanity gate — runs on every CI push | Business QA to mark critical-path scenarios |
+| `@known-issue` | Intentionally failing — documents an unsupported capability | Business QA to flag gaps in the mock |
+| `@edge-case` | Boundary or resilience scenario | Business QA to categorise non-happy-path tests |
+| `@session` | FIX session / connectivity related | Business QA |
+| `@race-condition` | Concurrent event scenarios | Business QA |
+| `@multi-user` | Multi-session / permission scenarios | Business QA |
+| `@batch` | Settlement or batch timing scenarios | Business QA |
+
+### Where tags can sit
+
+Tags can be placed at two levels:
+
+```gherkin
+@smoke @lifecycle                    ← Feature-level: ALL scenarios in this file inherit these tags
+Feature: Order Lifecycle
+
+  @p0                                ← Scenario-level: only this scenario gets @p0
+  Scenario: Valid buy order appears in blotter
+    Given the trader is logged in
+    ...
+
+  @known-issue @edge-case            ← Multiple tags on one scenario are allowed
+  Scenario: Order during FIX disconnect
+    ...
+```
+
+**Rule of thumb for Business QA:**
+- Tag `@smoke` on the 3–5 most critical scenarios per feature area
+- Tag `@known-issue` on any scenario that documents a gap (the test will show amber, not red)
+- You can apply multiple tags — there is no limit
 
 ### Do / Don't
 
