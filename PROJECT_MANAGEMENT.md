@@ -164,45 +164,46 @@ A scenario is **done** when:
 
 ## 8. Gantt Chart
 
-```
-PHASE                         Week 1   Week 2   Week 3   Week 4   Week 5   Week 6
-─────────────────────────────────────────────────────────────────────────────────
-1. Project Setup
-   Repo, tooling, env config  ████
-   Mock UI scaffold                    ████
+```mermaid
+gantt
+  title TradeBook QA — Project Timeline
+  dateFormat  YYYY-MM-DD
+  axisFormat  Week %W
 
-2. Environment Readiness
-   Feature file + steps                ████
-   Mock UI elements                    ████
+  section 🔧 Phase 1 — Project Setup
+  Repo, tooling, env config     :done,    p1a, 2026-04-01, 7d
+  Mock UI scaffold              :done,    p1b, 2026-04-06, 7d
 
-3. Core Lifecycle (P0)
-   Add / Modify / Cancel                        ████
-   Reject handling                              ████
-   Partial / Full fill                                   ████
+  section ✅ Phase 2 — Environment Readiness
+  Feature file + steps          :done,    p2a, 2026-04-06, 7d
+  Mock UI elements              :done,    p2b, 2026-04-06, 7d
 
-4. Downstream Validation (P1)
-   Settlement report                                     ████
-   RHUB reconciliation                                            ████
-   Position management                                            ████
-   Order history                                                  ████
+  section 🚀 Phase 3 — Core Lifecycle (P0)
+  Add / Modify / Cancel         :done,    p3a, 2026-04-13, 7d
+  Reject handling               :done,    p3b, 2026-04-13, 7d
+  Partial / Full fill           :done,    p3c, 2026-04-18, 7d
 
-5. Protection Scenarios (P1)
-   Duplicate exec / Overfill                                      ████
+  section 📊 Phase 4 — Downstream Validation (P1)
+  Settlement report             :done,    p4a, 2026-04-18, 7d
+  RHUB reconciliation           :done,    p4b, 2026-04-22, 7d
+  Position management           :done,    p4c, 2026-04-22, 7d
+  Order history                 :done,    p4d, 2026-04-22, 7d
 
-6. Living Docs + CI/CD
-   Report generator                                               ████
-   GitHub Actions                                                          ████
-   Render deployment                                                        ████
+  section 🛡️ Phase 5 — Protection Scenarios (P1)
+  Duplicate exec / Overfill     :done,    p5a, 2026-04-22, 7d
 
-7. Stabilization
-   Full suite regression (56 scenarios)                                     ████
-   Smoke regression (18 scenarios)                                          ████
+  section 📄 Phase 6 — Living Docs + CI/CD
+  Report generator              :done,    p6a, 2026-04-22, 7d
+  GitHub Actions                :done,    p6b, 2026-04-27, 7d
+  Render deployment             :done,    p6c, 2026-04-27, 7d
 
-8. Documentation
-   Project management doc                                                   ████
-   User manual                                                              ████
-─────────────────────────────────────────────────────────────────────────────────
-MILESTONE                     Setup    Env✓     Core✓    DS✓      CI✓      Docs✓
+  section 🔁 Phase 7 — Stabilization
+  Full suite regression (56)    :done,    p7a, 2026-04-27, 7d
+  Smoke regression (18)         :done,    p7b, 2026-04-27, 7d
+
+  section 📝 Phase 8 — Documentation
+  Project management doc        :done,    p8a, 2026-04-27, 7d
+  User manual                   :done,    p8b, 2026-04-27, 7d
 ```
 
 ---
