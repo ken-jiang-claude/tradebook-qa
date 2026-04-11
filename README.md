@@ -38,35 +38,32 @@ tradebook-qa/
 
 ---
 
-## Quick Start
+## Try It Now
 
-### 1. Run the Mock UI
+No installation needed — everything is live:
 
-```bash
-cd tradebook-mock
-npm install
-npm run dev
-# → http://localhost:4000
-# Login: qa_user / qa_password
-```
+| | |
+|---|---|
+| **Blotter UI** | https://tradebook-mock.onrender.com — login with `qa_user` / `qa_password` |
+| **Test Report** | https://tradebook-docs.onrender.com — full living docs, updated on every CI run |
 
-### 2. Run the Tests
+> First load may take 20–30 seconds on a cold start (free hosting tier).
 
-```bash
-cd cucumber-tests
-npm install
-npx playwright install chromium
+---
 
-npm run test:smoke        # 18 scenarios — fast sanity check
-npm run test:lifecycle    # 56 scenarios — full regression
-npm run test:manual       # manual mode — no browser required
-```
+## Local Development
 
-### 3. Generate the Report
+For contributors and QA engineers who want to run tests locally. See [USER_MANUAL.md](USER_MANUAL.md) for full setup instructions.
 
 ```bash
-npm run report
-# → opens cucumber-tests/reports/report.html
+# Start the mock UI
+cd tradebook-mock && npm install && npm run dev
+
+# Run tests (in a second terminal)
+cd cucumber-tests && npm install && npx playwright install chromium
+npm run test:smoke       # 18 scenarios — fast check
+npm run test:lifecycle   # 56 scenarios — full regression
+npm run report           # generate HTML report
 ```
 
 ---
