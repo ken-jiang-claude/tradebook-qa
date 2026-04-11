@@ -191,6 +191,34 @@ Feature: <What system capability is being tested>
     And   <additional assertion — continues the Then>
 ```
 
+### Keywords — Given, When, Then, And, But
+
+| Keyword | Role | Rule |
+|---------|------|------|
+| `Given` | Sets up the starting state | What is true before the action happens |
+| `When` | Describes the action | What the user or system does |
+| `Then` | Asserts the outcome | What should be observable after the action |
+| `And` | Continues the previous keyword | Treated as Given / When / Then depending on what came before it |
+| `But` | Negative continuation | Same as `And` — used to signal an exception or negative assertion |
+
+`And` and `But` are **optional** — they are readability shortcuts, not separate keywords. Cucumber treats them as whatever keyword preceded them.
+
+```gherkin
+Given the trader is logged in
+And a buy order for 100 shares of AAPL at 150.00 has been placed    ← treated as Given
+
+When a partial fill of 80 shares at 150.00 is simulated
+And the trader refreshes the blotter                                 ← treated as When
+
+Then the order status should be "Partially Filled"
+And the filled quantity should be 80                                 ← treated as Then
+But the order should not appear in the settlement report yet         ← treated as Then (negative)
+```
+
+**Rule of thumb:** Use `And` when adding another step of the same type. Use `But` when the step is a negative assertion or exception. Repeating the keyword (`Given`, `When`, `Then`) is equally valid if your team prefers explicitness.
+
+---
+
 ### Rules for this project
 
 | Rule | Why |
