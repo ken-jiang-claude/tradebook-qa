@@ -109,6 +109,16 @@ const filterScript = `
   .tb-filter-btn.btn-undefined.active   { background: #8a6d3b; color: #fff; border-color: #8a6d3b; }
   .tb-scenario-hidden                   { display: none !important; }
   .tb-feature-hidden                    { display: none !important; }
+  .tb-undefined-hint {
+    font-size: 11px;
+    color: #8a6d3b;
+    margin-left: 8px;
+    font-style: normal;
+    align-self: center;
+    border-left: 2px solid #d6b86b;
+    padding-left: 8px;
+    line-height: 1.4;
+  }
 </style>
 
 <script>
@@ -166,7 +176,8 @@ const filterScript = `
       '<button class="tb-filter-btn active"       data-filter="all">All Scenarios (' + counts.all + ')</button>' +
       '<button class="tb-filter-btn btn-passed"    data-filter="passed">&#10003; Passed (' + counts.passed + ')</button>' +
       '<button class="tb-filter-btn btn-failed"    data-filter="failed">&#10007; Failed (' + counts.failed + ')</button>' +
-      '<button class="tb-filter-btn btn-undefined" data-filter="undefined">? Undefined (' + counts.undefined + ')</button>'
+      '<button class="tb-filter-btn btn-undefined" data-filter="undefined" title="Undefined: step definitions exist but the scenario reached a step that threw a deliberate [KNOWN ISSUE] error — these are intentionally failing edge cases that document what the mock does not support.">? Undefined (' + counts.undefined + ')</button>' +
+      '<span class="tb-undefined-hint">&#9432; <em>Undefined</em> = known-issue edge cases — steps throw intentional errors to document unsupported behaviour</span>'
 
     // Insert before the first row (or feature wrapper if no row)
     var insertBefore = firstRow || featureWrappers[0]
