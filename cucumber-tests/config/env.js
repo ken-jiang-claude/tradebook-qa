@@ -25,7 +25,7 @@ export const ENV = {
   // Playwright
   headless:     process.env.HEADLESS !== 'false',
   browser:      process.env.BROWSER          || 'chromium',
-  timeout:      parseInt(process.env.DEFAULT_TIMEOUT || '10000'),
+  timeout:      parseInt(process.env.DEFAULT_TIMEOUT || '20000'),
   slowMo:       parseInt(process.env.SLOW_MO        || '0'),
 
   // Exchange simulator

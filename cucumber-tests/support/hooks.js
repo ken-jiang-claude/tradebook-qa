@@ -40,7 +40,7 @@ AfterStep(async function (step) {
     const stepText = step.pickleStep?.text || 'unknown-step'
     const safeName = stepText.replace(/[^a-z0-9]/gi, '_').slice(0, 40)
     const path     = await this.screenshot(`FAIL_${safeName}`)
-    if (path) {
+    if (path && existsSync(path)) {
       console.log(chalk.red(`  Screenshot saved: ${path}`))
       // Embed screenshot into Cucumber report
       try {

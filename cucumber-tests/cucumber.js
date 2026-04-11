@@ -67,6 +67,10 @@ export const edgeCases = {
     'step_definitions/edge_cases/edge_case_steps.js',
   ],
   tags:         '@known-issue',
-  format:       fmt,
+  format:       [
+    'progress-bar',
+    'json:reports/edge-report.json',
+    'html:reports/edge-report.html',
+  ],
   publishQuiet: true,
 }
