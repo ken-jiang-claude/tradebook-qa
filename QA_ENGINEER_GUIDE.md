@@ -217,16 +217,167 @@ Cucumber reports these as **Undefined** (amber) in the HTML report. This is expe
 
 ---
 
-## Adding a New Scenario
+## How to Write a Gherkin Scenario
 
-1. **Write the Gherkin** in the appropriate feature file under `features/lifecycle/` or `features/environment/`
-2. **Tag with `@smoke`** if it should be part of the fast regression gate
-3. **Run dry-run** to check for unmatched steps: `npm run test:dry`
-4. **Implement missing steps** in the relevant step definition file
-5. **Run the scenario** in headed mode to watch execution: `HEADLESS=false npm run test:lifecycle`
-6. **Run smoke regression** to check for regressions: `npm run test:smoke`
-7. **Generate the report**: `npm run report`
-8. **Commit and push** — CI will run and publish the updated report
+Gherkin is a plain-English format that describes test behaviour as **business requirements**, not implementation steps. The goal is for a non-technical stakeholder to read a scenario and understand exactly what is being tested.
+
+### Structure
+
+```gherkin
+Feature: <What system capability is being tested>
+  As a <role>
+  I want <goal>
+  So that <business value>
+
+  @tag1 @tag2
+  Scenario: <Specific behaviour being verified>
+    Given <the starting state of the system>
+    When  <the action the user takes>
+    Then  <the observable outcome>
+    And   <additional assertion — continues the Then>
+```
+
+### Rules for this project
+
+| Rule | Why |
+|------|-----|
+| One behaviour per scenario | Makes failures specific and easy to diagnose |
+| Given sets up state, When takes action, Then asserts | Don't mix setup into When steps |
+| Write for the reader, not the automation | If a BA can't understand it, rewrite it |
+| Use concrete values (`100 shares of AAPL at 150.00`) | Avoids vague scenarios that are hard to reproduce |
+| Tag `@smoke` for critical-path scenarios | Keeps the fast regression gate meaningful |
+| Tag `@known-issue` for intentional failures | Documents gaps without breaking the green suite |
+| Never put UI mechanics in Gherkin | Say "the order is filled", not "click the simulator button" |
+
+### Tags used in this project
+
+| Tag | Meaning |
+|-----|---------|
+| `@smoke` | Included in the fast 18-scenario sanity gate |
+| `@known-issue` | Intentionally failing — documents an unsupported capability |
+| `@edge-case` | Boundary or resilience scenario |
+| `@session` | FIX session / connectivity related |
+| `@race-condition` | Concurrent event scenarios |
+| `@multi-user` | Multi-session / permission scenarios |
+| `@batch` | Settlement or batch timing scenarios |
+
+### Do / Don't
+
+| Do | Don't |
+|----|-------|
+| `Then the order status should be "Filled"` | `Then click the blotter row and check the label text` |
+| `Given a buy order for 100 shares of AAPL at 150.00 exists` | `Given there is some order` |
+| `When the trader cancels the order` | `When page.click('[data-testid="cxl-btn"]')` |
+| Reuse existing step patterns | Invent new steps when an existing one fits |
+
+---
+
+## Worked Example — Adding a New Automated Scenario
+
+This end-to-end example walks through adding a new scenario from Gherkin to green in the living docs report.
+
+**Goal:** Verify that a sell order can be placed, partially filled, and shows the correct remaining quantity.
+
+---
+
+### Step 1 — Write the Gherkin
+
+Add to `cucumber-tests/features/lifecycle/05_fills.feature` (or create a new file):
+
+```gherkin
+@smoke
+Scenario: Sell order partially filled shows correct remaining quantity
+  Given the trader is logged in
+  And a sell order for 200 shares of MSFT at 390.00 has been placed
+  When a partial fill of 80 shares at 390.00 is simulated
+  Then the order status should be "Partially Filled"
+  And the filled quantity should be 80
+  And the remaining quantity should be 120
+```
+
+---
+
+### Step 2 — Check for missing steps
+
+```bash
+cd cucumber-tests
+npm run test:dry
+```
+
+The dry-run output lists any steps that don't match an existing definition:
+
+```
+? the remaining quantity should be 120   # UNDEFINED — needs a step definition
+```
+
+All other steps already exist in `step_definitions/lifecycle/`.
+
+---
+
+### Step 3 — Implement the missing step
+
+Open `cucumber-tests/step_definitions/lifecycle/fill_steps.js` and add:
+
+```js
+Then('the remaining quantity should be {int}', async function (expectedRemaining) {
+  if (this.isManual) {
+    return this.step({
+      action: `Verify remaining quantity shows ${expectedRemaining}`,
+      verify: `Blotter row shows remaining qty = ${expectedRemaining}`,
+    })
+  }
+
+  const remaining = await this.page.$eval(
+    `[data-testid="blotter-row"][data-order-id="${this.orderId}"] [data-field="remaining-qty"]`,
+    el => parseInt(el.textContent.trim(), 10)
+  )
+  expect(remaining).toBe(expectedRemaining)
+})
+```
+
+---
+
+### Step 4 — Run with a visible browser to watch it execute
+
+```bash
+HEADLESS=false npm run test:lifecycle -- --name "Sell order partially filled"
+```
+
+Watch the browser — you should see it log in, place the order, trigger the fill, and assert the blotter row values.
+
+---
+
+### Step 5 — Run smoke regression to check for regressions
+
+```bash
+npm run test:smoke
+```
+
+All 18 smoke scenarios should still pass. If any fail, the new step has a side effect — investigate before proceeding.
+
+---
+
+### Step 6 — Generate and review the report
+
+```bash
+npm run report
+```
+
+Open `reports/report.html` in a browser. The new scenario should appear green under the fills feature. Use the **Passed** filter button to confirm it is included.
+
+---
+
+### Step 7 — Commit and push
+
+```bash
+git add cucumber-tests/features/lifecycle/05_fills.feature \
+        cucumber-tests/step_definitions/lifecycle/fill_steps.js \
+        cucumber-tests/reports/report.html
+git commit -m "Add sell order partial fill remaining quantity scenario"
+git push origin main
+```
+
+CI runs automatically. The living docs site at [tradebook-docs.onrender.com](https://tradebook-docs.onrender.com) updates within ~2 minutes.
 
 ---
 
