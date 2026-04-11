@@ -75,108 +75,114 @@ const filterScript = `
     flex-wrap: wrap;
     margin: 16px 0 8px 0;
     padding: 12px 16px;
-    background: #1a1f2e;
+    background: #f5f5f5;
     border-radius: 4px;
-    border: 1px solid #2a3048;
+    border: 1px solid #ddd;
     align-items: center;
   }
-  .tb-filter-bar span {
+  .tb-filter-bar span.tb-filter-label {
     font-size: 12px;
-    color: #8892a4;
+    color: #555;
     margin-right: 4px;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: .05em;
   }
   .tb-filter-btn {
     padding: 5px 14px;
     border-radius: 3px;
-    border: 1px solid #2a3048;
-    background: #0d1120;
-    color: #c8d0e0;
+    border: 1px solid #aaa;
+    background: #fff;
+    color: #333;
     font-size: 12px;
     cursor: pointer;
     font-weight: 600;
     letter-spacing: .04em;
     transition: all .15s;
   }
-  .tb-filter-btn:hover        { border-color: #f0a500; color: #f0a500; }
-  .tb-filter-btn.active       { background: #f0a500; color: #000; border-color: #f0a500; }
-  .tb-filter-btn.btn-passed   { border-color: #00c851; color: #00c851; }
-  .tb-filter-btn.btn-passed.active { background: #00c851; color: #000; }
-  .tb-filter-btn.btn-failed   { border-color: #dc322f; color: #dc322f; }
-  .tb-filter-btn.btn-failed.active { background: #dc322f; color: #fff; }
-  .tb-filter-btn.btn-undefined { border-color: #f0a500; color: #f0a500; }
-  .tb-filter-btn.btn-undefined.active { background: #f0a500; color: #000; }
-  .feature-hidden { display: none !important; }
+  .tb-filter-btn:hover                  { border-color: #333; background: #eee; }
+  .tb-filter-btn.active                 { background: #555; color: #fff; border-color: #333; }
+  .tb-filter-btn.btn-passed:hover       { border-color: #3c763d; }
+  .tb-filter-btn.btn-passed.active      { background: #3c763d; color: #fff; border-color: #3c763d; }
+  .tb-filter-btn.btn-failed:hover       { border-color: #a94442; }
+  .tb-filter-btn.btn-failed.active      { background: #a94442; color: #fff; border-color: #a94442; }
+  .tb-filter-btn.btn-undefined:hover    { border-color: #8a6d3b; }
+  .tb-filter-btn.btn-undefined.active   { background: #8a6d3b; color: #fff; border-color: #8a6d3b; }
+  .tb-scenario-hidden                   { display: none !important; }
+  .tb-feature-hidden                    { display: none !important; }
 </style>
 
 <script>
 (function() {
-  function initFilters() {
-    // Find all feature/scenario panel containers
-    // cucumber-html-reporter uses .panel or .feature elements
-    var featurePanels = document.querySelectorAll('.feature')
-    if (!featurePanels.length) featurePanels = document.querySelectorAll('.panel.panel-default')
+  function getScenarioStatus(scenarioPanel) {
+    var heading = scenarioPanel.querySelector('.panel-heading .label-container')
+    if (!heading) return 'unknown'
+    if (heading.querySelector('.label-danger'))  return 'failed'
+    if (heading.querySelector('.label-success')) return 'passed'
+    if (heading.querySelector('.label-warning')) return 'undefined'
+    return 'unknown'
+  }
 
-    // Inject the filter bar before the first feature
-    var container = featurePanels.length ? featurePanels[0].parentElement : null
+  function initFilters() {
+    // Feature wrappers: div.feature-passed or div.feature-failed
+    var featureWrappers = document.querySelectorAll('div.feature-passed, div.feature-failed')
+    if (!featureWrappers.length) return
+
+    // For each feature wrapper, collect its scenario panels
+    // Scenario panels are nested: feature > col > panel(feature) > panel-body > panel(scenario)
+    var allScenarioPanels = []
+    featureWrappers.forEach(function(fw) {
+      var scenarios = fw.querySelectorAll('.panel-body > .panel.panel-default')
+      scenarios.forEach(function(sp) {
+        sp._featureWrapper = fw
+        sp._status = getScenarioStatus(sp)
+        allScenarioPanels.push(sp)
+      })
+    })
+
+    // Build and inject filter bar before first feature wrapper
+    var firstWrapper = featureWrappers[0]
+    var container = firstWrapper.parentElement
     if (!container) return
+
+    // Count per status
+    var counts = { all: allScenarioPanels.length, passed: 0, failed: 0, undefined: 0 }
+    allScenarioPanels.forEach(function(sp) {
+      if (counts[sp._status] !== undefined) counts[sp._status]++
+    })
 
     var bar = document.createElement('div')
     bar.className = 'tb-filter-bar'
-    bar.innerHTML = \`
-      <span>FILTER:</span>
-      <button class="tb-filter-btn active" data-filter="all">All Scenarios</button>
-      <button class="tb-filter-btn btn-passed" data-filter="passed">Passed</button>
-      <button class="tb-filter-btn btn-failed" data-filter="failed">Failed</button>
-      <button class="tb-filter-btn btn-undefined" data-filter="undefined">Undefined</button>
-    \`
-    container.insertBefore(bar, featurePanels[0])
+    bar.innerHTML =
+      '<span class="tb-filter-label">FILTER:</span>' +
+      '<button class="tb-filter-btn active" data-filter="all">All Scenarios (' + counts.all + ')</button>' +
+      '<button class="tb-filter-btn btn-passed" data-filter="passed">&#10003; Passed (' + counts.passed + ')</button>' +
+      '<button class="tb-filter-btn btn-failed" data-filter="failed">&#10007; Failed (' + counts.failed + ')</button>' +
+      '<button class="tb-filter-btn btn-undefined" data-filter="undefined">? Undefined (' + counts.undefined + ')</button>'
+    container.insertBefore(bar, firstWrapper)
 
     bar.addEventListener('click', function(e) {
       var btn = e.target.closest('[data-filter]')
       if (!btn) return
 
-      // Update active button
       bar.querySelectorAll('.tb-filter-btn').forEach(function(b) { b.classList.remove('active') })
       btn.classList.add('active')
 
       var filter = btn.getAttribute('data-filter')
 
-      featurePanels.forEach(function(panel) {
-        if (filter === 'all') {
-          panel.classList.remove('feature-hidden')
-          // Show all scenarios inside
-          panel.querySelectorAll('.scenario, .scenario-container, [class*="scenario"]').forEach(function(s) {
-            s.style.display = ''
-          })
-          return
-        }
+      // Show/hide each scenario panel
+      allScenarioPanels.forEach(function(sp) {
+        var show = (filter === 'all') || (sp._status === filter)
+        sp.classList.toggle('tb-scenario-hidden', !show)
+      })
 
-        // Check each scenario within the feature
-        // cucumber-html-reporter marks status via classes like 'passed', 'failed', 'undefined'
-        var scenarios = panel.querySelectorAll('.scenario, .scenario-container, tr[class]')
-        var hasMatch = false
-
-        scenarios.forEach(function(s) {
-          var classList = s.className || ''
-          var matches = classList.includes(filter)
-          s.style.display = matches ? '' : 'none'
-          if (matches) hasMatch = true
-        })
-
-        // Also check panel-level status class (some themes apply status to the feature panel)
-        if (!hasMatch) {
-          var panelClass = panel.className || ''
-          hasMatch = panelClass.includes(filter)
-        }
-
-        panel.classList.toggle('feature-hidden', !hasMatch)
+      // Show/hide each feature wrapper based on whether it has any visible scenarios
+      featureWrappers.forEach(function(fw) {
+        var hasVisible = !!fw.querySelector('.panel.panel-default:not(.tb-scenario-hidden)')
+        fw.classList.toggle('tb-feature-hidden', !hasVisible)
       })
     })
   }
 
-  // Run after DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initFilters)
   } else {
