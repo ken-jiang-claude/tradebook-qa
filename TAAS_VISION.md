@@ -37,14 +37,25 @@ The project is already 60–70% of the way to a minimal TaaS offering.
 The goal is to evolve from a **project-scoped test suite** into a **shared testing platform** that any team in the organisation can use to validate their trading system components — without needing to build or maintain their own automation framework.
 
 ```mermaid
-flowchart LR
-    A[Business QA\nwrites Gherkin] --> B[TaaS API\nor CI trigger]
-    B --> C[Test Execution\nEngine]
-    C --> D[Target Environment\nDev / QA / UAT]
-    C --> E[Results Store]
-    E --> F[Living Docs\nPortal]
-    E --> G[Slack / Email\nNotification]
-    E --> H[CI Gate\nPass / Fail]
+flowchart TD
+    A["👤 Business QA\n─────────────\nTask: Write Gherkin scenario\nOutput: .feature file"]
+    -->|"Gherkin file + tag filter"| B
+
+    B["⚙️ TaaS Trigger\n─────────────\nTask: Receive run request\nInputs: profile, environment, tag\nMethod: GitHub Actions API / UI dispatch"]
+    -->|"Run parameters"| C
+
+    C["🖥️ Test Execution Engine\n─────────────\nTask: Install deps, launch browser\nRun: Cucumber-js + Playwright\nOutput: JSON report"]
+
+    C -->|"HTTP requests"| D["🌐 Target Environment\n─────────────\nDev / QA / UAT\n(Mock UI or real system)"]
+    D -->|"UI responses"| C
+
+    C -->|"report.json"| E["📦 Results Store\n─────────────\nTask: Parse + store test output\nData: passed, failed, undefined\nper scenario, per run"]
+
+    E -->|"HTML report"| F["📄 Living Docs Portal\n─────────────\ntradebook-docs.onrender.com\nUpdated on every CI run"]
+
+    E -->|"pass/fail + summary"| G["🔔 Notification\n─────────────\nSlack / Email\nOn run completion"]
+
+    E -->|"pass/fail signal"| H["🚦 CI Gate\n─────────────\nDeployment pipeline\nGo / No-Go decision"]
 ```
 
 ---
@@ -114,6 +125,39 @@ Team C: RHUB Reconciliation      →  submits Gherkin  →  TaaS runs against RH
 ```
 
 Each team contributes test scenarios. The platform runs them on the right environment and publishes results to a shared dashboard. No team maintains their own execution infrastructure.
+
+---
+
+## Role Impact — Traditional QA to TaaS
+
+### What Changes for Business QA Analysts
+
+| Traditional QA | TaaS |
+|---|---|
+| Write test cases in spreadsheets (Excel, Confluence) | Write Gherkin scenarios — same thinking, structured format |
+| Execute tests manually step by step | Platform executes on demand — Business QA triggers or reads results |
+| Maintain test scripts in TestRail / Zephyr / qTest | Gherkin `.feature` files in Git are the living record |
+| Report pass/fail via weekly status updates | Living docs portal shows results in real time |
+| Coordinate environment setup with dev teams | Platform handles it — point at Dev / QA / UAT via config |
+| Regression cycles take days before each release | Smoke suite runs in minutes on every deployment |
+| Bugs found late in release cycle | CI gate catches failures on every push |
+
+### What Does NOT Change
+
+- **Test design thinking** — identifying what to test, edge cases, boundary conditions
+- **Domain knowledge** — understanding the business workflow (order lifecycle, settlement rules, etc.)
+- **Acceptance criteria ownership** — defining what "pass" looks like
+- **Stakeholder communication** — interpreting results, flagging risk to the right teams
+
+### The Net Effect on the Role
+
+```
+Shrinks:   Manual execution, environment coordination, reporting overhead
+Grows:     Scenario quality, coverage governance, results interpretation
+New:       Gherkin writing as a core skill — structured, not freeform
+```
+
+Business QA analysts who adapt become more strategic — they own **what** gets tested, not **how** it runs. The execution layer is handled by the platform; the value of a skilled Business QA shifts to test design, domain knowledge, and quality governance.
 
 ---
 
