@@ -55,7 +55,10 @@ function doLogin() {
     error.value = 'Username and password are required.'
     return
   }
-  // Accept any non-empty credentials in mock mode
+  if (username.value !== 'qa_user' || password.value !== 'qa_password') {
+    error.value = 'Invalid credentials. Please try again.'
+    return
+  }
   store.session.user     = username.value
   store.session.loggedIn = true
   error.value = ''

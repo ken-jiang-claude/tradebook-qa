@@ -11,7 +11,7 @@ config({ path: resolve(__dirname, '../.env') })
 
 export const ENV = {
   // Application
-  baseUrl:      process.env.TB_BASE_URL      || 'http://localhost:8080',
+  baseUrl:      process.env.TB_BASE_URL      || 'http://localhost:4000',
   environment:  process.env.TB_ENV           || 'alpha',
   username:     process.env.TB_USERNAME      || 'qa_user',
   password:     process.env.TB_PASSWORD      || 'qa_password',
