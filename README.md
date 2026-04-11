@@ -99,6 +99,8 @@ Full details: [USER_MANUAL.md](USER_MANUAL.md) (Steps 1–2) · [QA_ENGINEER_GUI
 | [PROJECT_MANAGEMENT.md](PROJECT_MANAGEMENT.md) | Business requirements, stakeholders, RACI, RICE, Gantt chart, SDLC, post-release checks |
 | [USER_MANUAL.md](USER_MANUAL.md) | Blotter UI guide + Gherkin writing guide for Business QA (Steps 1–2) |
 | [QA_ENGINEER_GUIDE.md](QA_ENGINEER_GUIDE.md) | Technical QA guide — setup, step definitions, CI/CD (Steps 3–7) |
+| [FRAMEWORK_BOOTSTRAP.md](FRAMEWORK_BOOTSTRAP.md) | How to build this framework from scratch for any project — stack choices, architecture decisions |
+| [TAAS_VISION.md](TAAS_VISION.md) | Testing as a Service vision — how this project evolves into a shared QA platform |
 | [Living Docs](https://tradebook-docs.onrender.com) | Published test results — updated on every CI run |
 
 ---
