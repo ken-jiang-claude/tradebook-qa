@@ -17,6 +17,36 @@ Feature: Edge Case Scenarios
   I want to validate resilience and boundary conditions
   So that the system behaves correctly under non-ideal circumstances
 
+  # ── What does "Undefined" mean? ────────────────────────────
+  #
+  #  Cucumber marks a scenario as UNDEFINED (amber) when a step
+  #  throws an error before returning pass or fail.
+  #
+  #  Every @known-issue scenario below is intentionally designed
+  #  to fail. Each step calls notSupported() which throws:
+  #
+  #    [KNOWN ISSUE] <reason why the mock cannot do this>
+  #    Fix needed:   <what would be required in production>
+  #
+  #  This turns the test suite into living documentation —
+  #  reviewers can see exactly what is not supported and why.
+  #
+  #  Example 1 — FIX Session Disconnect:
+  #    Given the FIX session is forcibly disconnected
+  #    → throws: [KNOWN ISSUE] Mock has no real FIX session —
+  #      session state cannot be controlled programmatically.
+  #      Fix needed: Integrate a FIX engine (e.g. QuickFIX/J)
+  #      with controllable session state via admin API.
+  #
+  #  Example 2 — Read-Only User Permissions:
+  #    Given a read-only user "viewer_01" is logged in
+  #    → throws: [KNOWN ISSUE] Mock grants all permissions to
+  #      any logged-in user. Cannot log in as restricted user.
+  #      Fix needed: Role-based entitlement model with per-user
+  #      permission map enforced at login and action level.
+  #
+  # ──────────────────────────────────────────────────────────
+
   # ── Session & Connectivity ─────────────────────────────────
 
   @known-issue @edge-case @session
