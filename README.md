@@ -74,12 +74,31 @@ GitHub Actions runs on every push to `main`:
 
 ---
 
+## How a New Test Gets Built (Steps 1–7)
+
+Adding a new automated scenario is a two-person handoff between Business QA and Technical QA:
+
+| Step | Who | What |
+|------|-----|------|
+| 1 | **Business QA** | Writes the Gherkin scenario in plain English |
+| 2 | **Business QA** | Runs dry-run (`npm run test:dry`) to identify undefined steps — hands off feature file + list to Technical QA |
+| 3 | **Technical QA** | Implements missing step definitions in JavaScript (Playwright) |
+| 4 | **Technical QA** | Runs the scenario with a visible browser to verify execution |
+| 5 | **Technical QA** | Runs smoke regression to confirm no regressions |
+| 6 | **Technical QA** | Generates the HTML report and reviews the result |
+| 7 | **Technical QA** | Commits and pushes — CI publishes the updated living docs |
+
+Full details: [USER_MANUAL.md](USER_MANUAL.md) (Steps 1–2) · [QA_ENGINEER_GUIDE.md](QA_ENGINEER_GUIDE.md) (Steps 3–7)
+
+---
+
 ## Documentation
 
 | Document | Description |
 |---|---|
 | [PROJECT_MANAGEMENT.md](PROJECT_MANAGEMENT.md) | Business requirements, stakeholders, RACI, RICE, Gantt chart, SDLC, post-release checks |
-| [USER_MANUAL.md](USER_MANUAL.md) | Guide for QA engineers and non-technical stakeholders |
+| [USER_MANUAL.md](USER_MANUAL.md) | Blotter UI guide + Gherkin writing guide for Business QA (Steps 1–2) |
+| [QA_ENGINEER_GUIDE.md](QA_ENGINEER_GUIDE.md) | Technical QA guide — setup, step definitions, CI/CD (Steps 3–7) |
 | [Living Docs](https://tradebook-docs.onrender.com) | Published test results — updated on every CI run |
 
 ---
