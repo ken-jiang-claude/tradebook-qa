@@ -9,9 +9,12 @@
 
 ## Who This Manual Is For
 
-This manual is for **non-technical stakeholders** — navigating the Blotter UI to observe order workflows and understand test coverage.
+This manual is for two audiences:
 
-If you are a QA engineer, see [QA_ENGINEER_GUIDE.md](QA_ENGINEER_GUIDE.md).
+- **Non-technical stakeholders** — navigating the Blotter UI to observe order workflows and understand test coverage
+- **Business QA** — writing Gherkin scenarios and handing them off to technical QA for automation
+
+If you are a technical QA engineer implementing step definitions, see [QA_ENGINEER_GUIDE.md](QA_ENGINEER_GUIDE.md).
 
 ---
 
@@ -163,3 +166,108 @@ It shows:
 - A link back to the live Blotter UI
 
 Green = passed. Red = failed. This report updates automatically after every CI run.
+
+---
+
+# Gherkin Guide (for Business QA)
+
+## How to Write a Gherkin Scenario
+
+Gherkin is a plain-English format that describes test behaviour as **business requirements**, not implementation steps. The goal is for a non-technical stakeholder to read a scenario and understand exactly what is being tested.
+
+### Structure
+
+```gherkin
+Feature: <What system capability is being tested>
+  As a <role>
+  I want <goal>
+  So that <business value>
+
+  @tag1 @tag2
+  Scenario: <Specific behaviour being verified>
+    Given <the starting state of the system>
+    When  <the action the user takes>
+    Then  <the observable outcome>
+    And   <additional assertion — continues the Then>
+```
+
+### Rules for this project
+
+| Rule | Why |
+|------|-----|
+| One behaviour per scenario | Makes failures specific and easy to diagnose |
+| Given sets up state, When takes action, Then asserts | Don't mix setup into When steps |
+| Write for the reader, not the automation | If a stakeholder can't understand it, rewrite it |
+| Use concrete values (`100 shares of AAPL at 150.00`) | Avoids vague scenarios that are hard to reproduce |
+| Tag `@smoke` for critical-path scenarios | Keeps the fast regression gate meaningful |
+| Tag `@known-issue` for intentional failures | Documents gaps without breaking the green suite |
+| Never put UI mechanics in Gherkin | Say "the order is filled", not "click the simulator button" |
+
+### Tags used in this project
+
+| Tag | Meaning |
+|-----|---------|
+| `@smoke` | Included in the fast 18-scenario sanity gate |
+| `@known-issue` | Intentionally failing — documents an unsupported capability |
+| `@edge-case` | Boundary or resilience scenario |
+| `@session` | FIX session / connectivity related |
+| `@race-condition` | Concurrent event scenarios |
+| `@multi-user` | Multi-session / permission scenarios |
+| `@batch` | Settlement or batch timing scenarios |
+
+### Do / Don't
+
+| Do | Don't |
+|----|-------|
+| `Then the order status should be "Filled"` | `Then click the blotter row and check the label text` |
+| `Given a buy order for 100 shares of AAPL at 150.00 exists` | `Given there is some order` |
+| `When the trader cancels the order` | `When page.click('[data-testid="cxl-btn"]')` |
+| Reuse existing step patterns | Invent new steps when an existing one fits |
+
+---
+
+## Worked Example — Business QA Contribution (Steps 1–2)
+
+This walks through the Business QA's part of adding a new automated scenario. After Step 2, hand off to technical QA.
+
+**Goal:** Verify that a sell order can be placed, partially filled, and shows the correct remaining quantity.
+
+---
+
+### Step 1 — Write the Gherkin
+
+Create or open a feature file under `cucumber-tests/features/lifecycle/` and add:
+
+```gherkin
+@smoke
+Scenario: Sell order partially filled shows correct remaining quantity
+  Given the trader is logged in
+  And a sell order for 200 shares of MSFT at 390.00 has been placed
+  When a partial fill of 80 shares at 390.00 is simulated
+  Then the order status should be "Partially Filled"
+  And the filled quantity should be 80
+  And the remaining quantity should be 120
+```
+
+Follow the rules above — business language, concrete values, no UI mechanics.
+
+---
+
+### Step 2 — Identify missing steps
+
+Run the dry-run to check which steps already have automation and which are new:
+
+```bash
+cd cucumber-tests
+npm run test:dry
+```
+
+The output lists any steps that don't match an existing definition:
+
+```
+? the remaining quantity should be 120   # UNDEFINED — needs a step definition
+```
+
+All other steps already exist. Document the undefined steps and pass them to the technical QA along with the feature file.
+
+> **Hand-off point:** Give the technical QA the feature file and the list of undefined steps. They will implement the step definitions, run the tests, and publish the updated report. See [QA_ENGINEER_GUIDE.md](QA_ENGINEER_GUIDE.md) for the technical QA steps.
