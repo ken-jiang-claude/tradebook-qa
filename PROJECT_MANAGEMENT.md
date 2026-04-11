@@ -83,7 +83,7 @@ For a hiring context, this project demonstrates:
 
 | Stakeholder | Role | Interest |
 |-------------|------|----------|
-| Taikary (Ken) Jiang | QA Engineer / Project Owner | Delivery, quality, portfolio demonstration |
+| Ken Jiang | QA Engineer / Project Owner | Delivery, quality, portfolio demonstration |
 | Hiring Manager | Evaluator | Code quality, methodology, completeness |
 | Technical Interviewer | Evaluator | Architecture decisions, automation depth |
 | QA Team (future) | End User | Running and maintaining the test suite |
