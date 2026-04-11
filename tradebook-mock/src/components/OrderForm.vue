@@ -24,7 +24,7 @@
             </select>
           </div>
           <div class="field">
-            <label>Symbol</label>
+            <label>Symbol <span class="field-note">— mock supports AAPL, MSFT, TSLA only</span></label>
             <input v-model="form.symbol" data-testid="order-symbol" placeholder="AAPL" />
           </div>
           <div class="field">
@@ -112,6 +112,7 @@ function close() {
 .close-btn { background: none; border: none; color: #8892a4; cursor: pointer; font-size: 1rem; }
 .field { margin-bottom: .75rem; }
 .field label { display: block; font-size: .72rem; color: #8892a4; margin-bottom: .25rem; }
+.field-note { font-size: .65rem; color: #4a5568; font-style: italic; }
 .field input, .field select {
   width: 100%; background: #0a0e1a; border: 1px solid #2a3048;
   color: #c8d0e0; padding: .4rem .6rem; border-radius: 3px; outline: none;

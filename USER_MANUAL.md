@@ -69,11 +69,17 @@ Click **LOGIN**. You will be taken to the Order Blotter.
 
 ---
 
+## Supported Symbols
+
+> **Note:** This mock environment supports **3 symbols only** — `AAPL`, `MSFT`, and `TSLA`. This is a known limitation of the mock UI. In a production environment, symbols are resolved dynamically via a live Security Master feed. Since this mock cannot connect to an external Security Master, the symbol list is hardcoded for testing purposes.
+
+---
+
 ## Placing a New Order
 
 1. Click **+ NEW ORDER** in the top bar
 2. Fill in the order form:
-   - **Symbol** — e.g. `AAPL`, `MSFT`, `TSLA`
+   - **Symbol** — must be one of: `AAPL`, `MSFT`, `TSLA`
    - **Side** — `Buy` or `Sell`
    - **Quantity** — number of shares
    - **Limit Price** — price per share
