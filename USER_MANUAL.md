@@ -44,8 +44,8 @@ https://tradebook-mock.onrender.com
 ## Logging In
 
 On the login screen:
-- **Username:** `qa`
-- **Password:** `qa`
+- **Username:** `qa_user`
+- **Password:** `qa_password`
 
 Click **LOGIN**. You will be taken to the Order Blotter.
 

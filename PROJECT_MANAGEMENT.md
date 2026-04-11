@@ -1,7 +1,7 @@
 # TradeBook QA — Project Management Document
 
 **Project:** TradeBook Mock UI + BDD Automation Suite  
-**Author:** Taikary (Ken) Jiang  
+**Author:** Ken Jiang  
 **Date:** April 2026  
 **Version:** 1.0  
 **Repo:** https://github.com/ken-jiang-claude/tradebook-qa  
