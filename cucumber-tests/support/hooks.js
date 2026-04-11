@@ -3,12 +3,14 @@
 //  Before / After hooks — browser lifecycle and failure capture
 // ============================================================
 import { Before, After, AfterStep, BeforeAll, AfterAll, Status, setDefaultTimeout } from '@cucumber/cucumber'
+import { readFile } from 'fs/promises'
+import { existsSync } from 'fs'
+import { mkdir } from 'fs/promises'
+import chalk     from 'chalk'
 
 // Increase step timeout to 30s so Playwright operations don't get killed
 // by Cucumber's default 5s timeout before they complete
 setDefaultTimeout(30_000)
-import { mkdir } from 'fs/promises'
-import chalk     from 'chalk'
 
 // Ensure screenshots directory exists
 BeforeAll(async function () {
@@ -31,7 +33,7 @@ Before(async function (scenario) {
   await this.launchBrowser()
 })
 
-// ── After each step: capture screenshot on failure ───────────
+// ── After each step: capture + embed screenshot on failure ───
 AfterStep(async function (step) {
   if (this.isManual) return
   if (step.result?.status === Status.FAILED) {
@@ -40,6 +42,17 @@ AfterStep(async function (step) {
     const path     = await this.screenshot(`FAIL_${safeName}`)
     if (path) {
       console.log(chalk.red(`  Screenshot saved: ${path}`))
+      // Embed screenshot into Cucumber report
+      try {
+        const img = await readFile(path)
+        await this.attach(img, 'image/png')
+      } catch {
+        // attach failed — don't block the run
+      }
+    }
+    // Embed error message into report
+    if (step.result?.message) {
+      await this.attach(`ERROR: ${step.result.message}`, 'text/plain')
     }
   }
 })
@@ -55,10 +68,22 @@ After(async function (scenario) {
     return
   }
 
-  // On failure: take a final full-page screenshot
+  // On failure: take final screenshot and embed it
   if (status === Status.FAILED) {
     const safeName = name.replace(/[^a-z0-9]/gi, '_').slice(0, 50)
-    await this.screenshot(`SCENARIO_FAIL_${safeName}`)
+    const path = await this.screenshot(`SCENARIO_FAIL_${safeName}`)
+    if (path && existsSync(path)) {
+      try {
+        const img = await readFile(path)
+        await this.attach(img, 'image/png')
+        await this.attach(
+          `Scenario failed: ${name}\nSee screenshot above for UI state at time of failure.`,
+          'text/plain'
+        )
+      } catch {
+        // attach failed — don't block the run
+      }
+    }
   }
 
   await this.closeBrowser()

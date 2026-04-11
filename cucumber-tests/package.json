@@ -11,6 +11,7 @@
     "test:environment": "cucumber-js --profile environment",
     "test:headed": "HEADLESS=false cucumber-js --profile default",
     "test:dry": "cucumber-js --profile default --dry-run",
+    "test:edge": "cucumber-js --profile edgeCases",
     "report": "node scripts/generate-report.js"
   },
   "dependencies": {

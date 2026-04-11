@@ -59,3 +59,14 @@ export const environment = {
   format:       fmt,
   publishQuiet: true,
 }
+
+export const edgeCases = {
+  paths:        ['features/edge_cases/**/*.feature'],
+  import:       [
+    ...stepFiles,
+    'step_definitions/edge_cases/edge_case_steps.js',
+  ],
+  tags:         '@known-issue',
+  format:       fmt,
+  publishQuiet: true,
+}
