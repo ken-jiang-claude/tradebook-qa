@@ -84,7 +84,7 @@ For a hiring context, this project demonstrates:
 | Stakeholder | Role | Interest |
 |-------------|------|----------|
 | Ken Jiang | QA Engineer / Project Owner | Delivery, quality, portfolio demonstration |
-| Hiring Manager | Evaluator | Code quality, methodology, completeness |
+| QE Manager | Evaluator | Code quality, methodology, completeness |
 | Technical Interviewer | Evaluator | Architecture decisions, automation depth |
 | QA Team (future) | End User | Running and maintaining the test suite |
 | Business Analyst (future) | Consumer | Reading living docs, reviewing Gherkin scenarios |
@@ -94,7 +94,7 @@ For a hiring context, this project demonstrates:
 
 ## 4. RACI Model
 
-| Activity | Ken (QA Owner) | Hiring Manager | QA Team (future) | BA (future) |
+| Activity | Ken (QA Owner) | QE Manager | QA Team (future) | BA (future) |
 |----------|---------------|----------------|-------------------|-------------|
 | Define business requirements | **R/A** | C | C | C |
 | Write Gherkin scenarios | **R/A** | I | C | C |
@@ -269,7 +269,7 @@ Post-release, the following questions guide future enhancement decisions:
 4. Is the manual mode (`npm run test:manual`) sufficient for non-automated environments?
 5. Are there missing edge cases from the addendum that should be automated?
 
-### For Stakeholders / Hiring Managers
+### For Stakeholders / QE Managers
 1. Do the Gherkin scenarios read clearly as business requirements?
 2. Is the living docs report easy to navigate and interpret?
 3. What additional downstream systems should be covered (e.g. FIX message validation, booking)?

@@ -227,7 +227,7 @@ Cucumber reports these as **Undefined** (amber) in the HTML report. This is expe
 
 ## Worked Example — Technical QA Implementation (Steps 3–7)
 
-The Business QA has already written the Gherkin and identified undefined steps (see [USER_MANUAL.md](USER_MANUAL.md)). Pick up from the feature file and undefined step list they provide.
+> **Steps 1–2 (writing the Gherkin and identifying undefined steps) are the Business QA's responsibility and are documented in [USER_MANUAL.md](USER_MANUAL.md).** Pick up from the feature file and undefined step list they provide.
 
 **Goal:** Implement automation for — Sell order partially filled shows correct remaining quantity.
 
