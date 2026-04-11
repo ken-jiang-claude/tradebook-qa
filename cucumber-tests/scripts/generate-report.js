@@ -37,6 +37,8 @@ const options = {
   scenarioTimestamp:      true,
   launchReport:           false,
   ignoreBadJsonData:      true,
+  noInlineAssets:         false,
+  columnLayout:           1,
   metadata: {
     'Project':     'TradeBook QA',
     'Test Suite':  'Lifecycle (56) + Edge Cases (9)',

@@ -123,6 +123,42 @@ Then('the order should remain in its current state without duplication', async f
 
 // ── Race Conditions ──────────────────────────────────────────
 
+Given('an open buy order exists for {int} shares of {word} at {float}', async function (qty, symbol, price) {
+  // Login and create the order so we have a real orderId to work with
+  await this.page.goto(`${this.env.baseUrl}`)
+  await this.page.fill('input[data-testid="username-input"]', this.env.username)
+  await this.page.fill('input[data-testid="password-input"]', this.env.password)
+  await this.page.click('[data-testid="login-submit"]')
+  await this.page.waitForSelector('[data-testid="new-order-btn"]')
+  await this.page.click('[data-testid="new-order-btn"]')
+  await this.page.fill('input[data-testid="order-symbol"]', symbol)
+  await this.page.fill('input[data-testid="order-qty"]', String(qty))
+  await this.page.fill('input[data-testid="order-price"]', String(price))
+  await this.page.click('[data-testid="order-submit"]')
+  await this.page.waitForSelector('[data-testid="order-confirm"]')
+  this.orderId = await this.page.$eval('[data-testid="order-id"]', el => el.textContent.trim())
+  await this.page.click('[data-testid="order-confirm"] .btn-primary')
+})
+
+Given('an order for {int} shares of {word} at {float} has been fully filled', async function (qty, symbol, price) {
+  // Login, create, and fully fill the order
+  await this.page.goto(`${this.env.baseUrl}`)
+  await this.page.fill('input[data-testid="username-input"]', this.env.username)
+  await this.page.fill('input[data-testid="password-input"]', this.env.password)
+  await this.page.click('[data-testid="login-submit"]')
+  await this.page.waitForSelector('[data-testid="new-order-btn"]')
+  await this.page.click('[data-testid="new-order-btn"]')
+  await this.page.fill('input[data-testid="order-symbol"]', symbol)
+  await this.page.fill('input[data-testid="order-qty"]', String(qty))
+  await this.page.fill('input[data-testid="order-price"]', String(price))
+  await this.page.click('[data-testid="order-submit"]')
+  await this.page.waitForSelector('[data-testid="order-confirm"]')
+  this.orderId = await this.page.$eval('[data-testid="order-id"]', el => el.textContent.trim())
+  await this.page.click('[data-testid="order-confirm"] .btn-primary')
+  await this.simulateFill({ qty, price, isFinal: true })
+  await this.waitForOrderStatus('Filled')
+})
+
 When('a cancel request is sent simultaneously with a fill for {int} shares', async function (qty) {
   notSupported(
     `Mock processes state changes synchronously — a true race condition between cancel and fill (${qty} shares) cannot be reproduced.`,
