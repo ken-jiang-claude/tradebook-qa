@@ -280,7 +280,14 @@ This end-to-end example walks through adding a new scenario from Gherkin to gree
 
 ---
 
-### Step 1 — Write the Gherkin
+### Part A — Business QA (Steps 1–2)
+
+> Your responsibility: write the Gherkin and identify which steps are new.
+> Hand the feature file to the technical QA after Step 2.
+
+---
+
+#### Step 1 — Write the Gherkin
 
 Add to `cucumber-tests/features/lifecycle/05_fills.feature` (or create a new file):
 
@@ -295,26 +302,38 @@ Scenario: Sell order partially filled shows correct remaining quantity
   And the remaining quantity should be 120
 ```
 
+Follow the rules in the [How to Write a Gherkin Scenario](#how-to-write-a-gherkin-scenario) section above — business language, concrete values, no UI mechanics.
+
 ---
 
-### Step 2 — Check for missing steps
+#### Step 2 — Identify missing steps
+
+Run the dry-run to check which steps already have automation and which need new step definitions:
 
 ```bash
 cd cucumber-tests
 npm run test:dry
 ```
 
-The dry-run output lists any steps that don't match an existing definition:
+The output lists any steps that don't match an existing definition:
 
 ```
 ? the remaining quantity should be 120   # UNDEFINED — needs a step definition
 ```
 
-All other steps already exist in `step_definitions/lifecycle/`.
+All other steps already exist in `step_definitions/lifecycle/`. Document the undefined steps and pass them to the technical QA along with the feature file.
+
+> **Hand-off point:** Give the technical QA the feature file and the list of undefined steps from Step 2. They will implement the step definitions and complete Steps 3–7.
 
 ---
 
-### Step 3 — Implement the missing step
+### Part B — Technical QA (Steps 3–7)
+
+> Pick up from the feature file and undefined step list provided by the Business QA.
+
+---
+
+#### Step 3 — Implement the missing step definitions
 
 Open `cucumber-tests/step_definitions/lifecycle/fill_steps.js` and add:
 
@@ -335,9 +354,11 @@ Then('the remaining quantity should be {int}', async function (expectedRemaining
 })
 ```
 
+Each new step must support dual-mode (automated + manual). See the [Test Architecture](#test-architecture) section for World helpers and selector conventions.
+
 ---
 
-### Step 4 — Run with a visible browser to watch it execute
+#### Step 4 — Run with a visible browser to watch it execute
 
 ```bash
 HEADLESS=false npm run test:lifecycle -- --name "Sell order partially filled"
@@ -347,7 +368,7 @@ Watch the browser — you should see it log in, place the order, trigger the fil
 
 ---
 
-### Step 5 — Run smoke regression to check for regressions
+#### Step 5 — Run smoke regression to check for regressions
 
 ```bash
 npm run test:smoke
@@ -357,7 +378,7 @@ All 18 smoke scenarios should still pass. If any fail, the new step has a side e
 
 ---
 
-### Step 6 — Generate and review the report
+#### Step 6 — Generate and review the report
 
 ```bash
 npm run report
@@ -367,7 +388,7 @@ Open `reports/report.html` in a browser. The new scenario should appear green un
 
 ---
 
-### Step 7 — Commit and push
+#### Step 7 — Commit and push
 
 ```bash
 git add cucumber-tests/features/lifecycle/05_fills.feature \
