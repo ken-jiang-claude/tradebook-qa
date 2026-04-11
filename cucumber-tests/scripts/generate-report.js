@@ -113,25 +113,33 @@ const filterScript = `
 
 <script>
 (function() {
+
   function getScenarioStatus(scenarioPanel) {
-    var heading = scenarioPanel.querySelector('.panel-heading .label-container')
+    // Look at the label-container inside the direct panel-heading of this scenario panel
+    var heading = scenarioPanel.children[0] // .panel-heading
     if (!heading) return 'unknown'
-    if (heading.querySelector('.label-danger'))  return 'failed'
-    if (heading.querySelector('.label-success')) return 'passed'
-    if (heading.querySelector('.label-warning')) return 'undefined'
+    var lc = heading.querySelector('.label-container')
+    if (!lc) return 'unknown'
+    if (lc.querySelector('.label-danger'))  return 'failed'
+    if (lc.querySelector('.label-success')) return 'passed'
+    if (lc.querySelector('.label-warning')) return 'undefined'
     return 'unknown'
   }
 
   function initFilters() {
     // Feature wrappers: div.feature-passed or div.feature-failed
-    var featureWrappers = document.querySelectorAll('div.feature-passed, div.feature-failed')
+    // Each is inside a div.row
+    var featureWrappers = Array.from(document.querySelectorAll('div.feature-passed, div.feature-failed'))
     if (!featureWrappers.length) return
 
-    // For each feature wrapper, collect its scenario panels
-    // Scenario panels are nested: feature > col > panel(feature) > panel-body > panel(scenario)
+    // Scenario panels sit at:
+    // feature-wrapper > div.col > div.panel(feature) > div.panel-collapse > div.panel-body > div.panel(scenario)
     var allScenarioPanels = []
     featureWrappers.forEach(function(fw) {
-      var scenarios = fw.querySelectorAll('.panel-body > .panel.panel-default')
+      // Use querySelectorAll without > so it works regardless of nesting depth
+      var featurePanelBody = fw.querySelector('.panel-collapse .panel-body')
+      if (!featurePanelBody) return
+      var scenarios = featurePanelBody.querySelectorAll(':scope > .panel.panel-default')
       scenarios.forEach(function(sp) {
         sp._featureWrapper = fw
         sp._status = getScenarioStatus(sp)
@@ -139,10 +147,7 @@ const filterScript = `
       })
     })
 
-    // Build and inject filter bar before first feature wrapper
-    var firstWrapper = featureWrappers[0]
-    var container = firstWrapper.parentElement
-    if (!container) return
+    if (!allScenarioPanels.length) return
 
     // Count per status
     var counts = { all: allScenarioPanels.length, passed: 0, failed: 0, undefined: 0 }
@@ -150,15 +155,22 @@ const filterScript = `
       if (counts[sp._status] !== undefined) counts[sp._status]++
     })
 
+    // Inject filter bar before the first feature wrapper's parent row
+    var firstRow = featureWrappers[0].parentElement
+    var container = firstRow ? firstRow.parentElement : featureWrappers[0].parentElement
+
     var bar = document.createElement('div')
     bar.className = 'tb-filter-bar'
     bar.innerHTML =
       '<span class="tb-filter-label">FILTER:</span>' +
-      '<button class="tb-filter-btn active" data-filter="all">All Scenarios (' + counts.all + ')</button>' +
-      '<button class="tb-filter-btn btn-passed" data-filter="passed">&#10003; Passed (' + counts.passed + ')</button>' +
-      '<button class="tb-filter-btn btn-failed" data-filter="failed">&#10007; Failed (' + counts.failed + ')</button>' +
+      '<button class="tb-filter-btn active"       data-filter="all">All Scenarios (' + counts.all + ')</button>' +
+      '<button class="tb-filter-btn btn-passed"    data-filter="passed">&#10003; Passed (' + counts.passed + ')</button>' +
+      '<button class="tb-filter-btn btn-failed"    data-filter="failed">&#10007; Failed (' + counts.failed + ')</button>' +
       '<button class="tb-filter-btn btn-undefined" data-filter="undefined">? Undefined (' + counts.undefined + ')</button>'
-    container.insertBefore(bar, firstWrapper)
+
+    // Insert before the first row (or feature wrapper if no row)
+    var insertBefore = firstRow || featureWrappers[0]
+    container.insertBefore(bar, insertBefore)
 
     bar.addEventListener('click', function(e) {
       var btn = e.target.closest('[data-filter]')
@@ -175,10 +187,18 @@ const filterScript = `
         sp.classList.toggle('tb-scenario-hidden', !show)
       })
 
-      // Show/hide each feature wrapper based on whether it has any visible scenarios
+      // Show/hide each feature row based on whether its wrapper has visible scenarios
       featureWrappers.forEach(function(fw) {
-        var hasVisible = !!fw.querySelector('.panel.panel-default:not(.tb-scenario-hidden)')
-        fw.classList.toggle('tb-feature-hidden', !hasVisible)
+        var hasVisible = allScenarioPanels.some(function(sp) {
+          return sp._featureWrapper === fw && !sp.classList.contains('tb-scenario-hidden')
+        })
+        // Hide the parent .row div so the gap disappears too
+        var row = fw.parentElement
+        if (row && row.classList.contains('row')) {
+          row.classList.toggle('tb-feature-hidden', !hasVisible)
+        } else {
+          fw.classList.toggle('tb-feature-hidden', !hasVisible)
+        }
       })
     })
   }
