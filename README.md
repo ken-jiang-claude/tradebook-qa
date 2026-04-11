@@ -1,4 +1,4 @@
-# TradeBook QA — BDD Automation Portfolio
+# TradeBook QA — BDD Automation Suite
 
 **Author:** Ken Jiang  
 **Stack:** Vue 3 · Cucumber-js · Playwright · GitHub Actions · Render  
