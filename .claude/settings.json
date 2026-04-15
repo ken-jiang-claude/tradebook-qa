@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import flask, anthropic; print\\('Dependencies OK'\\)\")",
+      "Bash(python web_app.py)",
+      "Bash(python -c ' *)",
+      "Bash(curl -s -X POST http://localhost:5001/api/gherkin/generate -H 'Content-Type: application/json' -d '{\"description\": \"QA analyst logs in and places a buy order for 100 AAPL shares at 15\"}' --max-time 10)",
+      "Bash(curl -s -X POST http://localhost:5001/api/gherkin/generate -H 'Content-Type: application/json' -d '{\"description\": \"QA analyst logs in and places a buy order for 100 AAPL shares at 15\"}' --max-time 15)",
+      "Bash(curl -s -X POST http://localhost:5001/api/chat -H 'Content-Type: application/json' -d '{\"messages\": [{\"role\": \"user\", \"content\": \"hi\"}]}' --max-time 15)",
+      "Bash(pkill -f \"python web_app.py\")",
+      "Bash(netstat -ano)",
+      "Bash(cmd /c \"netstat -ano | findstr :5001\")",
+      "Bash(cmd /c \"taskkill /PID 11408 /F & taskkill /PID 16176 /F & taskkill /PID 584 /F & taskkill /PID 16112 /F & taskkill /PID 12108 /F\")",
+      "Bash(cmd /c \"taskkill /PID 11408 /F 2>&1 & taskkill /PID 16176 /F 2>&1 & taskkill /PID 16112 /F 2>&1 & taskkill /PID 12108 /F 2>&1\")",
+      "Bash(cmd /c \"taskkill /F /IM python.exe\")",
+      "Bash(powershell -Command \"Get-Process -Id 584,16112,11408,16176,12108 -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,Path\")",
+      "Bash(powershell -Command \"Stop-Process -Id 584,16112,11408,16176,12108 -Force; Write-Host 'All killed'\")",
+      "Bash(.api_key\\) python *)",
+      "Bash(curl -s -X POST http://localhost:5001/api/chat -H 'Content-Type: application/json' -d '{\"messages\": [{\"role\": \"user\", \"content\": \"say hi\"}]}' --max-time 15)",
+      "Bash(curl -s -X POST http://localhost:5001/api/gherkin/generate -H 'Content-Type: application/json' -d '{\"description\": \"QA analyst logs in with QA account and submits a new order to buy 100 shares of AAPL at $15 limit price\"}' --max-time 20)",
+      "Bash(powershell -Command \"Get-Process python -ErrorAction SilentlyContinue | Stop-Process -Force\")",
+      "Bash(curl -s -X POST http://localhost:5001/api/gherkin/generate -H 'Content-Type: application/json' -d '{\"description\": \"QA analyst logs in with QA account and submits a new order to buy 100 shares of AAPL at $15 limit price\"}' --max-time 25)",
+      "Bash(curl -s -X POST http://localhost:5001/api/gherkin/generate -H 'Content-Type: application/json' -d '{\"description\": \"QA analyst modifies a limit price on an existing order for AAPL\"}' --max-time 25)"
+    ]
+  }
+}

@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TradeBook QA Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<style>
+:root {
+  --bg:       #07090c;
+  --s1:       #0d1117;
+  --s2:       #161b22;
+  --s3:       #1c2333;
+  --border:   #21262d;
+  --border2:  #30363d;
+  --orange:   #f0883e;
+  --orange-d: rgba(240,136,62,0.12);
+  --cyan:     #39d3f0;
+  --cyan-d:   rgba(57,211,240,0.1);
+  --green:    #3fb950;
+  --green-d:  rgba(63,185,80,0.1);
+  --yellow:   #e3b341;
+  --red:      #f85149;
+  --purple:   #bc8cff;
+  --blue:     #58a6ff;
+  --text:     #6e7681;
+  --text2:    #8b949e;
+  --text3:    #c9d1d9;
+  --text4:    #f0f6fc;
+  --mono:     'IBM Plex Mono', monospace;
+  --sans:     'IBM Plex Sans', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text3); font-family: var(--sans); font-size: 13px; min-height: 100vh; overflow-x: hidden; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--s1); }
+::-webkit-scrollbar-thumb { background: var(--border2); }
+
+/* ── HEADER ── */
+.hdr {
+  position: sticky; top: 0; z-index: 300;
+  background: rgba(7,9,12,0.96); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; height: 52px; padding: 0 24px; gap: 14px;
+}
+.hdr-logo {
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--orange); background: var(--orange-d);
+  border: 1px solid rgba(240,136,62,.3); padding: 4px 10px;
+  white-space: nowrap;
+}
+.hdr-title { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text4); }
+.hdr-sub   { font-size: 10px; color: var(--text); font-family: var(--mono); }
+.hdr-nav   { display: flex; gap: 2px; margin-left: auto; }
+.nav-btn {
+  font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  padding: 6px 14px; border: 1px solid transparent; background: transparent; color: var(--text2); cursor: pointer; transition: all .15s;
+}
+.nav-btn:hover { color: var(--text4); border-color: var(--border2); }
+.nav-btn.active { color: var(--orange); border-color: rgba(240,136,62,.5); background: var(--orange-d); }
+.env-pill {
+  font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  padding: 3px 9px; background: var(--green-d); border: 1px solid rgba(63,185,80,.35); color: var(--green);
+}
+
+/* ── PANELS ── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ══════════════════════════════════════════════════════
+   SCENARIOS PANEL
+══════════════════════════════════════════════════════ */
+.sc-layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 52px); }
+
+/* sidebar */
+.sc-sidebar {
+  background: var(--s1); border-right: 1px solid var(--border);
+  overflow-y: auto; position: sticky; top: 52px; height: calc(100vh - 52px);
+}
+.sc-filter { padding: 10px 12px 8px; border-bottom: 1px solid var(--border); }
+.filter-lbl { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text); margin-bottom: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip {
+  font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  padding: 3px 8px; border: 1px solid var(--border2); background: transparent; color: var(--text2); cursor: pointer; transition: all .12s;
+}
+.chip:hover { color: var(--text3); }
+.chip.active { background: var(--orange-d); border-color: rgba(240,136,62,.5); color: var(--orange); }
+.sc-item {
+  display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; cursor: pointer;
+  border-left: 2px solid transparent; border-bottom: 1px solid var(--border); transition: all .12s;
+}
+.sc-item:hover { background: var(--s2); }
+.sc-item.active { background: var(--orange-d); border-left-color: var(--orange); }
+.sc-item-num { font-family: var(--mono); font-size: 9px; color: var(--text); min-width: 16px; padding-top: 1px; }
+.sc-item-body { flex: 1; }
+.sc-item-name { font-size: 11px; color: var(--text3); line-height: 1.35; margin-bottom: 3px; }
+.sc-item.active .sc-item-name { color: var(--text4); }
+.sc-item-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+
+/* main content */
+.sc-main { padding: 28px 36px; max-width: 820px; }
+.sc-head { margin-bottom: 22px; }
+.sc-id { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: .1em; color: var(--orange); opacity: .7; }
+.sc-name { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--text4); line-height: 1.2; margin: 6px 0 10px; }
+.sc-badges { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+/* pill badges */
+.pill {
+  font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  padding: 2px 8px; border: 1px solid;
+}
+.pill-p0   { color: var(--red);    border-color: rgba(248,81,73,.4);   background: rgba(248,81,73,.08); }
+.pill-p1   { color: var(--yellow); border-color: rgba(227,179,65,.4);  background: rgba(227,179,65,.08); }
+.pill-p2   { color: var(--text2);  border-color: var(--border2);       background: var(--s2); }
+.pill-env  { color: var(--orange); border-color: rgba(240,136,62,.4);  background: var(--orange-d); }
+.pill-lc   { color: var(--cyan);   border-color: rgba(57,211,240,.4);  background: var(--cyan-d); }
+.pill-exec { color: var(--green);  border-color: rgba(63,185,80,.4);   background: var(--green-d); }
+.pill-post { color: var(--purple); border-color: rgba(188,140,255,.4); background: rgba(188,140,255,.08); }
+.pill-edge { color: var(--yellow); border-color: rgba(227,179,65,.4);  background: rgba(227,179,65,.08); }
+
+/* lifecycle flow */
+.lc-flow { background: var(--s1); border: 1px solid var(--border2); border-left: 3px solid var(--cyan); padding: 14px 16px; margin-bottom: 16px; }
+.lc-flow-hd { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--cyan); margin-bottom: 12px; }
+.lc-steps-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.lc-step { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.lc-step-box { font-family: var(--mono); font-size: 10px; font-weight: 700; padding: 5px 11px; border: 1px solid; }
+.lc-step-lbl { font-size: 9px; color: var(--text2); text-align: center; max-width: 86px; line-height: 1.3; }
+.lc-arrow { color: var(--border2); font-size: 14px; padding-bottom: 16px; }
+
+/* section cards */
+.card { background: var(--s1); border: 1px solid var(--border); padding: 14px 16px; margin-bottom: 12px; }
+.card-accent-o { border-left: 3px solid var(--orange); }
+.card-accent-g { border-left: 3px solid var(--green); }
+.card-accent-r { border-left: 3px solid var(--red); }
+.card-accent-p { border-left: 3px solid var(--purple); }
+.card-accent-c { border-left: 3px solid var(--cyan); }
+.card-hd { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 9px; }
+.card-body { font-size: 11px; color: var(--text3); line-height: 1.75; }
+.card-body ul { padding-left: 16px; }
+.card-body li { margin-bottom: 3px; }
+
+/* 2-col grid */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+/* steps table */
+.tbl { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 11px; }
+.tbl th {
+  font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text); padding: 7px 10px; text-align: left; background: var(--s2); border-bottom: 1px solid var(--border2);
+}
+.tbl td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text3); }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl-num { font-family: var(--mono); font-weight: 700; color: var(--cyan); white-space: nowrap; }
+.tbl-action { color: var(--text4); }
+.tbl-exp { color: var(--text2); }
+
+/* gherkin preview */
+.gk-pre { background: #0d1117; border: 1px solid var(--border2); border-left: 3px solid var(--purple); padding: 14px 18px; font-family: var(--mono); font-size: 11px; line-height: 1.85; overflow-x: auto; white-space: pre; }
+.gk-tag  { color: var(--purple); }
+.gk-feat { color: var(--cyan); font-weight: 600; }
+.gk-kw   { color: var(--orange); font-weight: 700; }
+.gk-step { color: var(--text3); }
+.gk-cmt  { color: var(--text); opacity: .55; }
+.gk-tbl  { color: var(--text2); }
+
+/* ══════════════════════════════════════════════════════
+   TRACKER PANEL
+══════════════════════════════════════════════════════ */
+.tracker-wrap { padding: 20px 24px; max-width: 1280px; }
+.progress-bar-row {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--s2); border: 1px solid var(--border); padding: 10px 16px; margin-bottom: 20px;
+}
+.pbar { flex: 1; height: 5px; background: var(--border2); overflow: hidden; }
+.pbar-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--cyan)); transition: width .4s; }
+.pbar-stats { display: flex; gap: 20px; align-items: center; }
+.pstat { display: flex; flex-direction: column; align-items: flex-end; }
+.pstat-num { font-family: var(--mono); font-size: 16px; font-weight: 700; line-height: 1; }
+.pstat-lbl { font-family: var(--mono); font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: var(--text); }
+.pstat-pass .pstat-num { color: var(--green); }
+.pstat-fail .pstat-num { color: var(--red); }
+.pstat-skip .pstat-num { color: var(--yellow); }
+.pstat-total .pstat-num { color: var(--cyan); }
+
+.trk-section { margin-bottom: 24px; }
+.trk-section-hd { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.trk-section-title { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--text4); }
+.trk-section-count { font-family: var(--mono); font-size: 10px; color: var(--text); margin-left: auto; }
+
+.trk-tbl { width: 100%; border-collapse: collapse; }
+.trk-tbl th {
+  font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text); padding: 6px 10px; text-align: left; background: var(--s2); border-bottom: 1px solid var(--border2);
+}
+.trk-row { border-bottom: 1px solid var(--border); cursor: pointer; transition: background .1s; }
+.trk-row:hover { background: rgba(255,255,255,.02); }
+.trk-row.expanded { background: rgba(255,255,255,.015); }
+.trk-tbl td { padding: 9px 10px; vertical-align: middle; }
+.trk-id   { font-family: var(--mono); font-size: 10px; color: var(--text); white-space: nowrap; }
+.trk-name { font-size: 12px; font-weight: 500; color: var(--text4); }
+.trk-crit { font-size: 11px; color: var(--text); max-width: 300px; line-height: 1.4; }
+.trk-chevron { font-family: var(--mono); font-size: 11px; color: var(--text); transition: transform .15s; }
+.trk-row.expanded .trk-chevron { transform: rotate(90deg); }
+
+/* status buttons */
+.status-cell { white-space: nowrap; }
+.sbtn {
+  font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: .05em;
+  padding: 4px 9px; border: 1px solid; cursor: pointer; background: transparent; transition: all .12s; margin-right: 3px;
+}
+.sbtn-pass { color: var(--green); border-color: rgba(63,185,80,.4); }
+.sbtn-pass.on { background: var(--green); color: #000; }
+.sbtn-fail { color: var(--red); border-color: rgba(248,81,73,.4); }
+.sbtn-fail.on { background: var(--red); color: #fff; }
+.sbtn-skip { color: var(--yellow); border-color: rgba(227,179,65,.4); }
+.sbtn-skip.on { background: var(--yellow); color: #000; }
+
+/* expand detail */
+.trk-detail-row td { background: rgba(0,0,0,.25); border-bottom: 1px solid var(--border2); padding: 0; }
+.trk-detail-inner { padding: 14px 16px; display: none; }
+.trk-detail-row.open .trk-detail-inner { display: block; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.detail-box { background: var(--s2); border: 1px solid var(--border); padding: 10px 12px; }
+.detail-box-hd { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 7px; }
+.detail-box-body { font-size: 11px; color: var(--text2); line-height: 1.7; }
+.detail-box-body ul { padding-left: 14px; }
+.detail-box-body li { margin-bottom: 2px; }
+.detail-note { width: 100%; padding: 7px 10px; background: var(--bg); border: 1px solid var(--border2); color: var(--text3); font-family: var(--mono); font-size: 11px; resize: vertical; min-height: 60px; outline: none; margin-top: 8px; }
+.detail-note:focus { border-color: var(--orange); }
+.detail-gk { background: #0d1117; border: 1px solid var(--border2); border-left: 3px solid var(--purple); padding: 10px 14px; font-family: var(--mono); font-size: 10px; line-height: 1.8; overflow-x: auto; white-space: pre; margin-top: 8px; }
+
+/* ══════════════════════════════════════════════════════
+   GHERKIN WRITER PANEL
+══════════════════════════════════════════════════════ */
+.gw-layout { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 52px); }
+.gw-sidebar {
+  background: var(--s1); border-right: 1px solid var(--border);
+  padding: 18px; display: flex; flex-direction: column; gap: 12px;
+  overflow-y: auto; position: sticky; top: 52px; height: calc(100vh - 52px);
+}
+.gw-h { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--text4); margin-bottom: 3px; }
+.gw-sub { font-size: 10px; color: var(--text); line-height: 1.6; }
+.gw-lbl { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text); margin-bottom: 5px; }
+.gw-select {
+  background: var(--s2); border: 1px solid var(--border2); color: var(--text3);
+  font-family: var(--mono); font-size: 11px; padding: 8px 10px; width: 100%; outline: none; cursor: pointer;
+}
+.gw-select:focus { border-color: var(--orange); }
+.gw-preview { background: var(--bg); border: 1px solid var(--border); padding: 10px 12px; }
+.gw-preview-name { font-size: 12px; color: var(--text4); font-weight: 600; margin-bottom: 5px; }
+.gw-checks { display: flex; flex-direction: column; gap: 5px; }
+.gw-check {
+  display: flex; align-items: center; gap: 9px; padding: 7px 9px;
+  border: 1px solid var(--border); background: var(--bg); cursor: pointer; transition: all .12s;
+}
+.gw-check:hover { border-color: var(--border2); background: var(--s2); }
+.gw-check input { accent-color: var(--orange); width: 13px; height: 13px; }
+.gw-check-lbl { font-size: 11px; color: var(--text3); }
+.gw-btn-primary {
+  font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  padding: 11px; border: 1px solid var(--orange); background: var(--orange-d); color: var(--orange);
+  cursor: pointer; transition: all .15s; width: 100%;
+}
+.gw-btn-primary:hover { background: var(--orange); color: #000; }
+.gw-btn-sec {
+  font-family: var(--mono); font-size: 11px; padding: 9px; border: 1px solid var(--border2);
+  background: transparent; color: var(--text2); cursor: pointer; transition: all .12s; width: 100%;
+}
+.gw-btn-sec:hover { border-color: var(--cyan); color: var(--cyan); }
+.gw-btn-dl {
+  font-family: var(--mono); font-size: 11px; padding: 9px;
+  border: 1px solid rgba(57,211,240,.4); background: var(--cyan-d); color: var(--cyan);
+  cursor: pointer; transition: all .12s; width: 100%;
+}
+.gw-btn-dl:hover { background: var(--cyan); color: #000; }
+.gw-actions { display: flex; flex-direction: column; gap: 6px; }
+.gw-divider {
+  font-family: var(--mono); font-size: 9px; color: var(--text);
+  text-align: center; padding: 4px 0; position: relative; letter-spacing: .08em;
+}
+.gw-divider::before, .gw-divider::after {
+  content: ''; position: absolute; top: 50%; width: 25%; height: 1px;
+  background: var(--border);
+}
+.gw-divider::before { left: 0; }
+.gw-divider::after  { right: 0; }
+.gw-ai-desc {
+  width: 100%; background: var(--s2); border: 1px solid var(--border2);
+  color: var(--text3); font-family: var(--sans); font-size: 11px;
+  padding: 9px 10px; resize: vertical; min-height: 88px; line-height: 1.6;
+  transition: border-color .15s;
+}
+.gw-ai-desc:focus { border-color: var(--cyan); outline: none; }
+.gw-ai-desc::placeholder { color: var(--text); opacity: .5; }
+.gw-btn-ai {
+  font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  width: 100%; padding: 11px; border: 1px solid rgba(57,211,240,.45);
+  background: var(--cyan-d); color: var(--cyan); cursor: pointer; transition: all .15s;
+}
+.gw-btn-ai:hover:not(:disabled) { background: var(--cyan); color: #000; }
+.gw-btn-ai:disabled { opacity: .45; cursor: not-allowed; }
+.gw-editor-wrap { display: flex; flex-direction: column; height: calc(100vh - 52px); }
+.gw-toolbar { display: flex; align-items: center; gap: 8px; padding: 9px 18px; background: var(--s1); border-bottom: 1px solid var(--border); }
+.gw-toolbar-title { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--text3); }
+.gw-linecount { font-family: var(--mono); font-size: 10px; padding: 3px 8px; background: var(--green-d); border: 1px solid rgba(63,185,80,.3); color: var(--green); display: none; }
+.gw-textarea {
+  flex: 1; background: #0d1117; color: var(--text3); font-family: var(--mono); font-size: 12px;
+  line-height: 1.85; padding: 20px 24px; border: none; outline: none; resize: none; border-bottom: 1px solid var(--border);
+}
+.gw-textarea::placeholder { color: var(--text); opacity: .35; }
+.gw-statusbar { display: flex; align-items: center; gap: 10px; padding: 5px 18px; background: var(--s1); font-family: var(--mono); font-size: 10px; color: var(--text); }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+/* ══════════════════════════════════════════════════════
+   ASK AI PANEL
+══════════════════════════════════════════════════════ */
+.ai-layout { display: grid; grid-template-columns: 250px 1fr; min-height: calc(100vh - 52px); }
+.ai-sidebar { background: var(--s1); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: sticky; top: 52px; height: calc(100vh - 52px); }
+.ai-sidebar-top { padding: 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.ai-h { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--text4); margin-bottom: 4px; }
+.ai-sub { font-size: 10px; color: var(--text); line-height: 1.55; }
+.quick-title { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text); padding: 10px 14px 5px; }
+.quick-btn {
+  display: block; width: 100%; text-align: left; padding: 8px 14px;
+  font-family: var(--mono); font-size: 11px; border: none; background: transparent; color: var(--text2);
+  cursor: pointer; transition: all .12s; border-bottom: 1px solid var(--border);
+}
+.quick-btn:hover { background: var(--s2); color: var(--text3); }
+.ai-hist-title { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text); padding: 10px 14px 5px; border-top: 1px solid var(--border); flex-shrink: 0; }
+.ai-hist-list { flex: 1; overflow-y: auto; }
+.hist-item { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-bottom: 1px solid var(--border); transition: background .12s; }
+.hist-item:hover { background: var(--s2); }
+.hist-name { flex: 1; font-size: 11px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.hist-date { font-family: var(--mono); font-size: 9px; color: var(--text); }
+.hist-del { background: none; border: none; color: var(--text); cursor: pointer; font-size: 13px; padding: 0 2px; transition: color .12s; }
+.hist-del:hover { color: var(--red); }
+.sidebar-action { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 9px 14px; border: none; border-top: 1px solid var(--border); background: var(--s2); color: var(--text); cursor: pointer; transition: all .12s; flex-shrink: 0; }
+.sidebar-action:hover { color: var(--text4); background: var(--s3); }
+.ai-main { display: flex; flex-direction: column; height: calc(100vh - 52px); }
+.ai-msgs { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+.msg-wrap { display: flex; gap: 10px; }
+.msg-wrap.user { flex-direction: row-reverse; }
+.msg-avatar { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 10px; font-weight: 700; flex-shrink: 0; margin-top: 2px; border: 1px solid; }
+.av-qa { border-color: rgba(240,136,62,.4); background: var(--orange-d); color: var(--orange); }
+.av-ai { border-color: rgba(57,211,240,.4); background: var(--cyan-d); color: var(--cyan); }
+.msg-bubble { max-width: 72%; padding: 12px 14px; font-size: 12px; line-height: 1.75; border: 1px solid var(--border2); }
+.msg-bubble.user { background: var(--s3); color: var(--text4); }
+.msg-bubble.ai   { background: var(--s2); color: var(--text3); }
+.msg-bubble.ai p { margin-bottom: 8px; }
+.msg-bubble.ai p:last-child { margin-bottom: 0; }
+.msg-bubble.ai code { background: var(--s3); padding: 1px 5px; font-family: var(--mono); font-size: 10px; color: var(--cyan); }
+.msg-bubble.ai pre { background: var(--bg); border: 1px solid var(--border2); padding: 10px 12px; overflow-x: auto; margin: 8px 0; }
+.msg-bubble.ai pre code { background: none; padding: 0; font-size: 11px; color: var(--text2); }
+.msg-bubble.ai ul, .msg-bubble.ai ol { padding-left: 18px; margin: 6px 0; }
+.msg-bubble.ai li { margin-bottom: 3px; }
+.msg-bubble.ai h3 { color: var(--orange); font-size: 12px; margin: 10px 0 5px; }
+.msg-bubble.ai strong { color: var(--text4); }
+.msg-bubble.ai table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 11px; }
+.msg-bubble.ai th { background: var(--s3); padding: 5px 8px; text-align: left; border: 1px solid var(--border2); }
+.msg-bubble.ai td { padding: 5px 8px; border: 1px solid var(--border); }
+.typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); display: inline-block; margin: 0 2px; animation: bounce .8s infinite; }
+.typing-dot:nth-child(2) { animation-delay: .15s; }
+.typing-dot:nth-child(3) { animation-delay: .3s; }
+@keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
+.ai-input-area { padding: 12px 20px; background: var(--s1); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+.ai-input-row { display: flex; gap: 8px; }
+.ai-input {
+  flex: 1; background: var(--bg); border: 1px solid var(--border2); color: var(--text3);
+  font-family: var(--mono); font-size: 12px; padding: 10px 13px; outline: none; resize: none; min-height: 42px; max-height: 120px;
+}
+.ai-input:focus { border-color: var(--orange); }
+.send-btn {
+  font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 10px 16px;
+  border: 1px solid var(--orange); background: var(--orange-d); color: var(--orange);
+  cursor: pointer; transition: all .15s; white-space: nowrap; align-self: flex-end;
+}
+.send-btn:hover { background: var(--orange); color: #000; }
+.send-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* toast */
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--s3); border: 1px solid var(--green); color: var(--green); font-family: var(--mono); font-size: 12px; font-weight: 600; padding: 10px 16px; z-index: 9999; animation: toastIn .2s ease, toastOut .3s 1.8s forwards; }
+@keyframes toastIn  { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes toastOut { to{opacity:0;transform:translateY(-8px)} }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-logo">QA</div>
+  <div>
+    <div class="hdr-title">Bloomberg TradeBook QA Portal</div>
+    <div class="hdr-sub">Trade Lifecycle · Acceptance Testing · Non-Production</div>
+  </div>
+  <nav class="hdr-nav">
+    <button class="nav-btn active" onclick="gotoTab('scenarios')">Scenarios</button>
+    <button class="nav-btn"        onclick="gotoTab('tracker')">Tracker</button>
+    <button class="nav-btn"        onclick="gotoTab('gherkin')">Gherkin Writer</button>
+    <button class="nav-btn"        onclick="gotoTab('ai')">Ask AI</button>
+  </nav>
+  <div class="env-pill">Alpha / Beta</div>
+</header>
+
+<!-- ═══ SCENARIOS PANEL ═══ -->
+<div id="panel-scenarios" class="panel active">
+  <div class="sc-layout">
+    <aside class="sc-sidebar" id="sc-sidebar"></aside>
+    <div class="sc-main" id="sc-main"></div>
+  </div>
+</div>
+
+<!-- ═══ TRACKER PANEL ═══ -->
+<div id="panel-tracker" class="panel">
+  <div class="tracker-wrap" id="tracker-wrap"></div>
+</div>
+
+<!-- ═══ GHERKIN WRITER PANEL ═══ -->
+<div id="panel-gherkin" class="panel">
+  <div class="gw-layout">
+    <aside class="gw-sidebar">
+      <div>
+        <div class="gw-h">Gherkin Writer</div>
+        <div class="gw-sub">Select a scenario and generate a ready-to-use .feature file.</div>
+      </div>
+      <div>
+        <div class="gw-lbl">Scenario</div>
+        <select class="gw-select" id="gw-select" onchange="gwPreview()"></select>
+      </div>
+      <div class="gw-preview" id="gw-preview">
+        <div class="gw-preview-name" id="gw-preview-name">—</div>
+        <div id="gw-preview-badges" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;"></div>
+      </div>
+      <div>
+        <div class="gw-lbl">Include in output</div>
+        <div class="gw-checks">
+          <label class="gw-check"><input type="checkbox" id="opt-steps"    checked><span class="gw-check-lbl">Test step comments</span></label>
+          <label class="gw-check"><input type="checkbox" id="opt-evidence" checked><span class="gw-check-lbl">Evidence capture comments</span></label>
+          <label class="gw-check"><input type="checkbox" id="opt-rca"            ><span class="gw-check-lbl">RCA annotation</span></label>
+        </div>
+      </div>
+      <button class="gw-btn-primary" onclick="gwGenerate()">⚡ Generate Feature File</button>
+      <div class="gw-divider">— or describe your scenario —</div>
+      <div>
+        <div class="gw-lbl">Plain-language description</div>
+        <textarea class="gw-ai-desc" id="gw-ai-desc"
+          placeholder="e.g. QA analyst logs in with QA account and submits a new order to buy 100 shares of AAPL at $15 limit price"></textarea>
+      </div>
+      <button class="gw-btn-ai" id="gw-ai-btn" onclick="gwAiGenerate()">✦ Generate with AI</button>
+      <div class="gw-actions" id="gw-actions" style="display:none;">
+        <button class="gw-btn-sec" onclick="gwCopy()" id="gw-copy-btn">Copy to clipboard</button>
+        <button class="gw-btn-dl"  onclick="gwDownload()">↓ Download .feature</button>
+        <button class="gw-btn-sec" onclick="gwSave()">Save to history</button>
+      </div>
+      <div id="gw-hist-wrap" style="display:none;">
+        <div class="gw-lbl" style="margin-top:4px;">Saved files</div>
+        <div id="gw-hist-list" style="display:flex;flex-direction:column;gap:4px;"></div>
+      </div>
+    </aside>
+    <div class="gw-editor-wrap">
+      <div class="gw-toolbar">
+        <div class="gw-toolbar-title" id="gw-filename">feature file editor</div>
+        <div class="gw-linecount" id="gw-linecount"></div>
+      </div>
+      <textarea class="gw-textarea" id="gw-editor"
+        placeholder="# Select a scenario and click Generate Feature File&#10;# to produce a Gherkin .feature file&#10;#&#10;# Bloomberg TradeBook QA Portal"></textarea>
+      <div class="gw-statusbar">
+        <div class="status-dot" id="gw-dot" style="background:var(--yellow);"></div>
+        <span id="gw-status">No file generated</span>
+        <span style="margin-left:auto;color:var(--border2);">Cucumber · Gherkin · UTF-8</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ASK AI PANEL ═══ -->
+<div id="panel-ai" class="panel">
+  <div class="ai-layout">
+    <aside class="ai-sidebar">
+      <div class="ai-sidebar-top">
+        <div class="ai-h">Ask AI Assistant</div>
+        <div class="ai-sub">Claude-powered. Ask about test scenarios, order states, Gherkin, or RCA guidance.</div>
+      </div>
+      <div class="quick-title">Quick prompts</div>
+      <button class="quick-btn" onclick="qp('Walk me through the full equity trade lifecycle from order entry to settlement, covering every order state along the way.')">Full trade lifecycle</button>
+      <button class="quick-btn" onclick="qp('What are all the order status transitions for an equity order? Include pending, active, and terminal states with descriptions of each.')">Order status transitions</button>
+      <button class="quick-btn" onclick="qp('Explain the entitlement and authentication checks a QA analyst should verify before starting trade lifecycle testing in a Bloomberg TradeBook environment.')">Auth & entitlement checks</button>
+      <button class="quick-btn" onclick="qp('Explain the cancel-replace workflow: what order states are involved, what can go wrong, and how do I verify the modification was applied correctly?')">Cancel-Replace workflow</button>
+      <button class="quick-btn" onclick="qp('Write a Gherkin scenario for an order that receives a partial fill of 60 out of 100 shares. Focus on order state, quantity fields, and what to verify in the blotter.')">Gherkin: partial fill</button>
+      <button class="quick-btn" onclick="qp('What are the most common root causes when a cancel request is not acknowledged? What evidence should I collect for RCA?')">Cancel not ack'd — RCA</button>
+      <button class="quick-btn" onclick="qp('Explain post-trade settlement and RHUB reconciliation: what fields must match, what constitutes a recon break, and what evidence should I collect?')">Settlement & RHUB recon</button>
+      <div class="ai-hist-title">Chat history</div>
+      <div class="ai-hist-list" id="ai-hist-list"></div>
+      <button class="sidebar-action" onclick="aiSave()">Save conversation</button>
+      <button class="sidebar-action" onclick="aiClear()">New chat</button>
+    </aside>
+    <div class="ai-main">
+      <div class="ai-msgs" id="ai-msgs">
+        <div class="msg-wrap">
+          <div class="msg-avatar av-ai">AI</div>
+          <div class="msg-bubble ai">
+            <p>Welcome to the <strong>TradeBook QA Portal</strong>. I'm your Bloomberg TradeBook QA assistant.</p>
+            <p>I can help with:</p>
+            <ul>
+              <li>Trade lifecycle scenarios from environment setup to settlement</li>
+              <li>Authentication, entitlement, and environment verification</li>
+              <li>Order state transitions and acceptance criteria</li>
+              <li>Writing Gherkin .feature files in plain business language</li>
+              <li>Edge cases: cancel-replace chains, IOC/FOK, race conditions</li>
+              <li>RCA classification and evidence collection</li>
+            </ul>
+            <p>Use the quick prompts on the left, or type your question.</p>
+          </div>
+        </div>
+      </div>
+      <div class="ai-input-area">
+        <div class="ai-input-row">
+          <textarea class="ai-input" id="ai-input" rows="2"
+            placeholder="Ask about trade lifecycle, order states, Gherkin, RCA..."
+            onkeydown="aiKey(event)"></textarea>
+          <button class="send-btn" id="send-btn" onclick="aiSend()">Send →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// SCENARIO DATA
+// ═══════════════════════════════════════════════════════════
+const SCENARIOS = [
+
+  // ── ENVIRONMENT & AUTH ───────────────────────────────────
+  {
+    id:"ENV_LOGIN_001", module:"Environment", priority:"P0", phase:"Session",
+    name:"QA Login & Environment Verification",
+    steps:[
+      {n:"1", a:"Navigate to the QA environment URL",              e:"Login page loads; banner confirms beta or alpha environment — not production"},
+      {n:"2", a:"Submit valid QA credentials (username + password)",e:"Authentication succeeds; user is redirected to the trading dashboard"},
+      {n:"3", a:"Verify environment label",                        e:"Header or banner clearly reads 'beta' or 'alpha' — no production indicator"},
+      {n:"4", a:"Confirm QA account entitlements",                 e:"Account has access to test instruments, routes, and order entry functions"},
+    ],
+    criteria:"QA credentials authenticate successfully; environment label is unambiguously non-production; entitlements are in place for test workflows.",
+    passSigns:["Login succeeds with QA credentials","Beta or alpha label visible in UI","QA account name shown in header","Test instruments and routes accessible","No production environment banner"],
+    failSigns:["Redirect to production environment","Authentication failure or SSO timeout","Wrong environment label","Missing entitlements to instruments or routes","Session expires immediately after login"],
+    rca:["environment_config","auth_defect","entitlement_missing","SSO_issue"],
+    evidence:["screenshot_of_landing_page","URL","timestamp","auth_log_entry"],
+    gherkin:`@environment @auth @P0
+Feature: QA Login and Environment Verification
+
+  Scenario: Analyst logs in with QA credentials to the beta environment
+    Given a valid QA user account exists with beta entitlements
+    And the beta environment URL is accessible from the analyst workstation
+    When the analyst navigates to the beta login page
+    And submits valid QA credentials
+    Then authentication succeeds and the analyst is redirected to the trading dashboard
+    And the environment label in the UI shows beta or alpha
+    And no production environment banner or indicator is visible
+    And the QA account has access to the required test instruments and routes
+
+  Scenario: Login with invalid credentials is rejected
+    Given the beta environment login page is accessible
+    When the analyst submits incorrect credentials
+    Then authentication fails with a clear error message
+    And the analyst is not granted access to any trading functions`
+  },
+
+  {
+    id:"ENV_ENTITLEMENT_002", module:"Environment", priority:"P0", phase:"Session",
+    name:"Entitlement & Permission Check",
+    steps:[
+      {n:"1", a:"Log in with QA account",                          e:"Authentication succeeds"},
+      {n:"2", a:"Verify order entry entitlement",                  e:"New Order screen is accessible; all required fields are present"},
+      {n:"3", a:"Verify instrument access",                        e:"Test symbols load correctly; security master returns valid data"},
+      {n:"4", a:"Verify route access",                             e:"Test routing destinations are available and selectable"},
+      {n:"5", a:"Attempt action without entitlement (negative test)",e:"Action is blocked with a clear access-denied message"},
+    ],
+    criteria:"QA account has exactly the entitlements needed for testing — no more, no less. Unentitled actions are cleanly blocked.",
+    passSigns:["Order entry screen accessible","Test instruments load without errors","Route destinations available","Unentitled actions are blocked with clear message","No silent permission bypass"],
+    failSigns:["Order entry screen not accessible","Test symbols fail to load","Routes unavailable or greyed out","Unentitled actions are silently ignored","Permissions bleed from another account"],
+    rca:["entitlement_config","security_master_defect","route_config","permissions_bleed"],
+    evidence:["screenshot_of_entitlement_check","blotter_access_log","negative_test_screenshot"],
+    gherkin:`@environment @entitlement @P0
+Feature: QA Account Entitlement and Permission Verification
+
+  Scenario: QA account has order entry entitlement
+    Given the analyst is logged in with a valid QA account
+    When the analyst navigates to the order entry screen
+    Then the new order form is accessible with all required fields displayed
+    And test instruments can be searched and selected
+    And test routing destinations are available
+
+  Scenario: Unentitled action is blocked clearly
+    Given the analyst is logged in with a QA account without admin entitlements
+    When the analyst attempts to access an admin-only function
+    Then the action is blocked
+    And a clear access-denied or insufficient-permissions message is displayed
+    And no partial data from the admin function is exposed`
+  },
+
+  {
+    id:"ENV_SESSION_003", module:"Environment", priority:"P0", phase:"Session",
+    name:"Session Health & Service Connectivity",
+    steps:[
+      {n:"1", a:"Open the session or connectivity monitor",         e:"Monitor loads; status shows all services are connected"},
+      {n:"2", a:"Verify OMS, EMS, and blotter service health",      e:"All three report healthy status with no error indicators"},
+      {n:"3", a:"Verify order entry service is responsive",         e:"A test action (e.g. symbol lookup) returns a response within expected latency"},
+      {n:"4", a:"Check for reconnection or gap events in logs",     e:"No reconnect events; no missing messages; no sequence gaps"},
+    ],
+    criteria:"All required trading services are connected and healthy; no reconnection events; order entry is responsive.",
+    passSigns:["All services show CONNECTED or HEALTHY","No reconnection events in session log","Symbol lookup returns in acceptable time","No gap or sequence errors"],
+    failSigns:["Any service shows DISCONNECTED or DEGRADED","Reconnect loop visible in logs","Symbol lookup times out","Gap event requiring message resend"],
+    rca:["connectivity","simulator_outage","network_latency","service_restart"],
+    evidence:["session_monitor_screenshot","service_health_log","timestamp","latency_measurement"],
+    gherkin:`@environment @session @P0
+Feature: Session Health and Service Connectivity
+
+  Scenario: All trading services are healthy before testing begins
+    Given the analyst is logged in to the QA environment
+    When the analyst opens the session or connectivity monitor
+    Then all required services — OMS, EMS, and blotter — show a healthy connected status
+    And no reconnection or gap events appear in the session log
+    And a test symbol lookup returns a valid response within the expected time window`
+  },
+
+  // ── TRADE LIFECYCLE ──────────────────────────────────────
+  {
+    id:"ORD_NEW_010", module:"Lifecycle", priority:"P0", phase:"Trade",
+    name:"New Order — Single Equity",
+    steps:[
+      {n:"1", a:"Enter order details in the order entry screen",    e:"Symbol, side, quantity, price type, and account are accepted without validation errors"},
+      {n:"2", a:"Submit the order",                                 e:"Order is accepted by the system; status immediately moves to Pending New"},
+      {n:"3", a:"Receive acknowledgment",                           e:"Status moves to New — the order is live and open in the market"},
+      {n:"4", a:"Verify blotter entry",                             e:"A new row appears with the correct symbol, side, quantity, price, and order status"},
+      {n:"5", a:"Verify audit trail",                               e:"Submission event is recorded with timestamp, user ID, and order details"},
+    ],
+    criteria:"Order is acknowledged and transitions from Pending New to New; a blotter row with correct details appears; an audit trail entry is created.",
+    passSigns:["Unique order ID assigned","Pending New status received immediately after submit","Status transitions to New","Blotter row shows correct details","Audit trail records the submission event"],
+    failSigns:["No acknowledgment received after submit","Order stuck at Pending New","Blotter not updated","Duplicate order ID assigned","No audit trail entry"],
+    rca:["order_validation","routing_defect","static_data","entitlement","blotter_sync"],
+    evidence:["order_id","blotter_screenshot","audit_trail_entry","submission_timestamp"],
+    gherkin:`@lifecycle @order @P0
+Feature: New Equity Order Submission
+
+  Scenario: Analyst submits a valid limit buy order and receives acknowledgment
+    Given the analyst is logged in with order entry entitlement
+    And the QA session and all services are healthy
+    And the test instrument AAPL is available in the security master
+    When the analyst enters a buy limit order for 100 shares at 185.00
+    And submits the order
+    Then the order status moves to Pending New immediately after submission
+    And the order status transitions to New confirming it is live in the market
+    And a new row appears in the blotter showing symbol AAPL, side Buy, quantity 100, price 185.00
+    And the audit trail records the submission with a timestamp and the analyst's user ID
+
+  Scenario: Order with missing required field is rejected before submission
+    Given the analyst is on the new order screen
+    When the analyst submits an order without specifying a quantity
+    Then the order is not submitted
+    And a validation error highlights the missing quantity field`
+  },
+
+  {
+    id:"ORD_MOD_011", module:"Lifecycle", priority:"P1", phase:"Trade",
+    name:"Order Modify (Cancel-Replace)",
+    steps:[
+      {n:"1", a:"Select an open order in the blotter",              e:"Order is in New or Partially Filled state and eligible for modification"},
+      {n:"2", a:"Enter updated price or quantity and submit",       e:"Modification request is accepted; order status moves to Pending Replace"},
+      {n:"3", a:"Receive acknowledgment of modification",           e:"Status moves to Replaced; updated values are applied to the order"},
+      {n:"4", a:"Verify blotter shows updated values",              e:"Price or quantity in the blotter row reflects the change"},
+      {n:"5", a:"Verify order history shows the modification chain",e:"History contains both the original order and the modification, in correct order"},
+    ],
+    criteria:"Order reflects updated values after modification; status transitions through Pending Replace to Replaced; order history shows the full chain; no orphaned Pending Replace state.",
+    passSigns:["Status moves through Pending Replace to Replaced","Blotter shows updated price or quantity","Order history contains original and modified versions in sequence","No orphaned Pending Replace in blotter"],
+    failSigns:["Modification not acknowledged","Old values still displayed after ack","Order stuck in Pending Replace","History missing the modification event","Chain broken in order history"],
+    rca:["state_machine","replace_chain_defect","race_condition","blotter_sync"],
+    evidence:["blotter_before_and_after","order_history_screenshot","audit_trail","timestamps"],
+    gherkin:`@lifecycle @modify @P1
+Feature: Order Modification via Cancel-Replace
+
+  Scenario: Analyst modifies the price of an open limit order
+    Given an open buy order for 100 shares of AAPL at 185.00 with status New
+    When the analyst selects the order and submits a price change to 186.50
+    Then the order status moves to Pending Replace
+    And the status transitions to Replaced confirming the modification was accepted
+    And the blotter shows the updated price of 186.50
+    And the order history shows the original order at 185.00 followed by the modified order at 186.50
+
+  Scenario: Modification rejected by the market reverts the order cleanly
+    Given an open buy order with status New
+    When the analyst submits a modification and the market rejects it
+    Then the order reverts to its previous state with the original price and quantity
+    And no Pending Replace status remains in the blotter`
+  },
+
+  {
+    id:"ORD_CXL_012", module:"Lifecycle", priority:"P0", phase:"Trade",
+    name:"Order Cancel",
+    steps:[
+      {n:"1", a:"Select an open order in the blotter",              e:"Order is in New or Partially Filled state and eligible for cancellation"},
+      {n:"2", a:"Submit cancel request",                            e:"Cancel request is accepted; order status moves to Pending Cancel"},
+      {n:"3", a:"Receive cancel acknowledgment",                    e:"Status moves to Canceled — a terminal state; no further fills are possible"},
+      {n:"4", a:"Verify remaining open quantity is zero",           e:"Blotter shows zero remaining quantity and Canceled status"},
+      {n:"5", a:"Confirm no fills arrive after cancel",             e:"No execution events received after the cancel acknowledgment"},
+    ],
+    criteria:"Order transitions to Canceled; remaining quantity is zero; no fills arrive after cancel acknowledgment; Canceled is a terminal state.",
+    passSigns:["Pending Cancel status received after request","Status transitions to Canceled","Zero remaining quantity shown in blotter","No fills received after cancel acknowledgment","Order history shows Canceled as terminal state"],
+    failSigns:["No cancel acknowledgment received","Fill arrives after cancel acknowledgment","Order still shows open quantity","Status does not reach Canceled","Duplicate cancel requests sent"],
+    rca:["cancel_routing","stale_order_state","race_condition","blotter_sync"],
+    evidence:["cancel_acknowledgment","blotter_state","order_history","timestamp_of_cancel_and_fills"],
+    gherkin:`@lifecycle @cancel @P0
+Feature: Order Cancellation
+
+  Scenario: Analyst cancels an open order with no fills in progress
+    Given an open buy order for 100 shares with status New and no fills in progress
+    When the analyst selects the order and submits a cancel request
+    Then the order status moves to Pending Cancel
+    And the status transitions to Canceled confirming the order is no longer active
+    And the remaining open quantity shown in the blotter is zero
+    And no fill events are received for this order after the cancel acknowledgment
+
+  Scenario: Attempt to cancel an already-filled order is rejected
+    Given a fully filled order with status Filled
+    When the analyst attempts to cancel the order
+    Then the cancel request is rejected with a clear message indicating the order is already in a terminal state
+    And the order status remains Filled`
+  },
+
+  // ── EXECUTION ────────────────────────────────────────────
+  {
+    id:"EXEC_PARTIAL_020", module:"Execution", priority:"P0", phase:"Trade",
+    name:"Partial Fill",
+    steps:[
+      {n:"1", a:"Open order is live in the market with status New",  e:"Full quantity is open; no fills have occurred yet"},
+      {n:"2", a:"A partial fill event arrives",                      e:"Order status moves to Partially Filled; filled quantity and remaining quantity update"},
+      {n:"3", a:"Verify quantity arithmetic",                        e:"Filled quantity plus remaining quantity equals the original order quantity"},
+      {n:"4", a:"Verify average price",                              e:"Average price is correctly calculated from the fill details"},
+      {n:"5", a:"Verify position impact",                            e:"Position is updated by the filled quantity only — not by the remaining open quantity"},
+    ],
+    criteria:"Status is Partially Filled; filled + remaining = original quantity; average price is correct; position updated by fill quantity only.",
+    passSigns:["Status shows Partially Filled","Filled qty + remaining qty = original order qty","Average price is mathematically correct","Position updated by filled quantity only","Order remains open for remaining quantity"],
+    failSigns:["Status moves to Filled prematurely","Quantity arithmetic is wrong","Average price is incorrect","Position updated by full order quantity instead of fill quantity","Duplicate position impact"],
+    rca:["execution_math","state_machine","duplicate_exec_handling","position_sync"],
+    evidence:["blotter_state","filled_quantity","remaining_quantity","average_price","position_delta"],
+    gherkin:`@execution @fill @P0
+Feature: Partial Fill Processing
+
+  Scenario: Order receives a partial fill of 60 out of 100 shares
+    Given an open buy order for 100 shares of AAPL at a limit of 185.00 with status New
+    When a partial fill of 60 shares at 184.95 is received
+    Then the order status moves to Partially Filled
+    And the blotter shows 60 shares filled and 40 shares remaining
+    And the average fill price is 184.95
+    And the position is updated by exactly 60 shares
+    And the order remains active in the market for the remaining 40 shares
+
+  Scenario: Two sequential partial fills aggregate correctly
+    Given an open buy order for 100 shares with status Partially Filled after a 60-share fill at 184.95
+    When a second fill of 30 shares arrives at 185.10
+    Then the blotter shows 90 shares filled and 10 shares remaining
+    And the average fill price reflects both fills weighted by quantity`
+  },
+
+  {
+    id:"EXEC_FULL_021", module:"Execution", priority:"P0", phase:"Trade",
+    name:"Full Fill",
+    steps:[
+      {n:"1", a:"Open or partially filled order is active",         e:"Some or all quantity is still open"},
+      {n:"2", a:"Full fill arrives",                                e:"Status moves to Filled — a terminal state; remaining quantity becomes zero"},
+      {n:"3", a:"Verify filled and remaining quantities",           e:"Filled quantity equals the original order quantity; remaining is zero"},
+      {n:"4", a:"Verify position fully updated",                    e:"Position reflects the complete order quantity"},
+      {n:"5", a:"Verify settlement record is created",              e:"A settlement entry is generated with correct trade date, settlement date, price, and quantity"},
+    ],
+    criteria:"Status is Filled; filled quantity equals original order quantity; remaining is zero; position and settlement record are correct.",
+    passSigns:["Status shows Filled","Filled quantity equals original order quantity","Remaining quantity is zero","Position reflects full quantity","Settlement record created with correct details"],
+    failSigns:["Remaining quantity is non-zero after full fill","Status stuck at Partially Filled","Position not fully updated","No settlement record created","Settlement record has wrong date or quantity"],
+    rca:["fill_processing","terminal_state_defect","position_sync","settlement_batch"],
+    evidence:["blotter_state","position_report","settlement_record","execution_timestamp"],
+    gherkin:`@execution @fill @P0
+Feature: Full Fill Processing
+
+  Scenario: Order is fully filled in a single execution
+    Given an open buy order for 100 shares of AAPL with status New
+    When a full fill of 100 shares at 185.10 is received
+    Then the order status moves to Filled
+    And the blotter shows 100 shares filled and zero shares remaining
+    And the position is updated by 100 shares
+    And a settlement record is created with the correct trade date and settlement date
+
+  Scenario: Full fill after a prior partial fill closes the order correctly
+    Given a buy order for 100 shares with status Partially Filled after 60 shares filled
+    When the remaining 40 shares are filled
+    Then the order status moves to Filled
+    And total filled quantity is 100 and remaining quantity is zero
+    And the settlement record reflects the combined execution`
+  },
+
+  // ── POST-TRADE ───────────────────────────────────────────
+  {
+    id:"SETTLE_RHUB_030", module:"Post-Trade", priority:"P0", phase:"Post-Trade",
+    name:"Settlement & RHUB Validation",
+    steps:[
+      {n:"1", a:"End-of-day settlement batch runs",                 e:"Fully filled orders are picked up by the settlement process"},
+      {n:"2", a:"Settlement report is generated",                   e:"Trade appears with correct symbol, side, quantity, price, account, trade date, and settlement date"},
+      {n:"3", a:"RHUB record is created",                           e:"RHUB entry matches the settlement report fields exactly"},
+      {n:"4", a:"Reconciliation check runs",                        e:"No recon break flagged between execution data and RHUB"},
+      {n:"5", a:"Verify settlement totals",                         e:"Report totals match execution totals — no silent mismatch"},
+    ],
+    criteria:"Executed trade appears in settlement report and RHUB with matching details; no reconciliation break; settlement totals equal execution totals.",
+    passSigns:["Trade appears in settlement report with correct fields","RHUB record matches settlement report","No reconciliation break flagged","Settlement totals match execution totals","Settlement date is T+2 (or correct cycle for instrument)"],
+    failSigns:["Trade missing from settlement report","RHUB value mismatch on any field","Reconciliation break raised","Wrong settlement date","Silent mismatch between totals"],
+    rca:["batch_timing","field_mapping_defect","downstream_dependency","settlement_calendar"],
+    evidence:["settlement_report_extract","rhub_record","reconciliation_log","batch_run_timestamp"],
+    gherkin:`@post_trade @settlement @P0
+Feature: Settlement Report and RHUB Validation
+
+  Scenario: Fully filled trade appears correctly in settlement and RHUB
+    Given a fully filled buy order for 100 shares of AAPL at an average price of 185.10 with a trade date of today
+    And the settlement cycle for AAPL is T+2
+    When the end-of-day settlement batch runs
+    Then the trade appears in the settlement report with the correct symbol, side, quantity, average price, trade date, and settlement date
+    And the RHUB record contains matching values for all trade fields
+    And no reconciliation break is flagged between the execution data and RHUB
+    And the settlement report totals match the execution totals exactly`
+  },
+
+  {
+    id:"HIST_POS_031", module:"Post-Trade", priority:"P1", phase:"Post-Trade",
+    name:"Order History & Position Integrity",
+    steps:[
+      {n:"1", a:"Complete a trade through its full lifecycle",       e:"Trade reaches a terminal state — Filled or Canceled"},
+      {n:"2", a:"Open order history for the completed order",       e:"History shows every state transition from submission to terminal state, in order"},
+      {n:"3", a:"Compare blotter and history",                      e:"Both views show identical states and timestamps with no discrepancy"},
+      {n:"4", a:"Review position report",                           e:"Position reflects executed quantity with no duplicates or gaps"},
+      {n:"5", a:"Verify no duplicate execution impact",             e:"Each fill appears exactly once in the position — no double-counting"},
+    ],
+    criteria:"Blotter and order history agree on the full lifecycle; positions match total executed quantity with no duplicates or missing impacts.",
+    passSigns:["Blotter and history agree on all state transitions","Timestamps consistent across blotter and history","Position matches total executed quantity","No duplicate execution impacts","No missing state transitions in history"],
+    failSigns:["Blotter and history show different states","Timestamps inconsistent","Position does not match executed quantity","Duplicate fill impact in position","State transitions missing from history"],
+    rca:["event_persistence","history_build_defect","position_engine_lag","duplicate_exec_handling"],
+    evidence:["blotter_screenshot","order_history_export","position_report","recon_comparison"],
+    gherkin:`@post_trade @history @positions @P1
+Feature: Order History and Position Integrity
+
+  Scenario: Blotter and order history agree on the full order lifecycle
+    Given a buy order that was submitted, partially filled with 60 shares, and then canceled for the remainder
+    When the analyst views the blotter for this order
+    And opens the order history for the same order
+    Then the blotter and history show the same sequence of states: New, Partially Filled, Canceled
+    And the timestamps for each state are consistent across both views
+    And the position reflects exactly 60 shares with no duplicate impact`
+  },
+
+  // ── EDGE CASES ───────────────────────────────────────────
+  {
+    id:"EDGE_CXL_REPLACE_070", module:"Edge Cases", priority:"P1", phase:"Edge",
+    name:"Cancel-Replace Chain Integrity",
+    steps:[
+      {n:"1", a:"Submit first modification on an open order",       e:"Order moves through Pending Replace to Replaced; new values applied"},
+      {n:"2", a:"Submit second modification on the replaced order", e:"Second modification chains to the first replaced version — not the original"},
+      {n:"3", a:"Simulate market rejecting a modification",         e:"Order reverts cleanly to the prior acknowledged state; no Pending Replace remains"},
+      {n:"4", a:"Submit modification after a partial fill",         e:"Remaining quantity recalculates correctly; no overfill is possible"},
+      {n:"5", a:"Review order history after all modifications",     e:"History shows the full modification sequence in correct chronological order"},
+    ],
+    criteria:"Modification chain is intact across all replaces; a market rejection causes a clean rollback; no orphaned Pending Replace; order history is complete and in sequence.",
+    passSigns:["Each modification references and replaces the previous version","Market rejection reverts order to last acknowledged state","No orphaned Pending Replace status","History shows complete modification sequence in order","Quantity math correct after modify-and-fill race"],
+    failSigns:["Modification chain broken mid-sequence","Orphaned Pending Replace after market rejection","History missing intermediate modifications","Quantity corrupted after replace and fill processed simultaneously","Order history out of sequence"],
+    rca:["replace_chain_defect","state_rollback_missing","race_condition","order_history_build"],
+    evidence:["order_history_export","blotter_state","quantity_verification","audit_trail"],
+    gherkin:`@edge_cases @cancel_replace @P1
+Feature: Cancel-Replace Chain Integrity
+
+  Scenario: Multiple sequential modifications maintain the correct chain
+    Given an open buy order for 100 shares of AAPL at 185.00 with status New
+    When the analyst modifies the price to 186.00 and the modification is acknowledged
+    And the analyst modifies the price again to 187.00
+    Then the second modification correctly replaces the first modified version
+    And the order history shows three versions: original at 185.00, first modify at 186.00, second modify at 187.00 in order
+    And the blotter shows the current price as 187.00
+
+  Scenario: Market rejects a modification and the order rolls back cleanly
+    Given an open order with status New
+    When the analyst submits a modification and the market rejects it
+    Then the order reverts to its previous price and quantity
+    And no Pending Replace status remains in the blotter
+    And the order history records the attempted modification and its rejection`
+  },
+
+  {
+    id:"EDGE_IOC_FOK_090", module:"Edge Cases", priority:"P1", phase:"Edge",
+    name:"IOC and FOK Order Types",
+    steps:[
+      {n:"1", a:"Submit an IOC order",                             e:"Available quantity fills immediately; remainder is canceled at once with no delay"},
+      {n:"2", a:"Submit an IOC order with no available liquidity", e:"Entire order is canceled immediately with zero filled quantity"},
+      {n:"3", a:"Submit a FOK order with full liquidity available",e:"Entire quantity fills in a single execution; status moves to Filled"},
+      {n:"4", a:"Submit a FOK order with insufficient liquidity",  e:"Order is fully rejected or canceled with zero fill — no partial fill"},
+      {n:"5", a:"Verify no open quantity remains in either case",  e:"Neither IOC nor FOK leaves any quantity in an open or ambiguous state"},
+    ],
+    criteria:"IOC cancels remainder immediately; FOK fills completely or cancels with zero fill; no order is left in an open or ambiguous state after resolution.",
+    passSigns:["IOC: partial fill then immediate cancel of remainder","IOC with no liquidity: full immediate cancel with zero fill","FOK: full fill in one execution","FOK with insufficient liquidity: full cancel with zero fill","Remaining quantity is zero in all outcomes","No order left open after resolution"],
+    failSigns:["IOC remainder left open in blotter","FOK partial fill applied","Order in ambiguous state after IOC or FOK resolution","Wrong order type behaviour at session boundaries"],
+    rca:["time_in_force_enforcement","ioc_cancel_defect","fok_allornone_defect","session_boundary_handling"],
+    evidence:["blotter_final_state","filled_quantity","remaining_quantity","order_type_configuration"],
+    gherkin:`@edge_cases @order_types @P1
+Feature: IOC and FOK Order Type Enforcement
+
+  Scenario: IOC order receives a partial fill and the remainder is immediately canceled
+    Given the market has liquidity for only 60 of the 100 requested shares
+    When the analyst submits a buy order with order type IOC
+    Then 60 shares are filled immediately
+    And the remaining 40 shares are canceled without delay
+    And the final order status is Canceled with 60 shares shown as filled
+    And the remaining open quantity in the blotter is zero
+
+  Scenario: FOK order is fully rejected when the full quantity cannot be matched at once
+    Given the market cannot fill the full 100 shares in a single execution
+    When the analyst submits a buy order with order type FOK
+    Then no shares are filled
+    And the order is canceled with a filled quantity of zero
+    And no partial fill appears in the blotter or execution history`
+  },
+
+  {
+    id:"EDGE_SESSION_100", module:"Edge Cases", priority:"P1", phase:"Edge",
+    name:"Session Drop During Order Submission",
+    steps:[
+      {n:"1", a:"Submit an order at the moment the session drops",  e:"Order is blocked, held pending, or rejected cleanly — no false live or open status"},
+      {n:"2", a:"Observe system behaviour during disconnection",    e:"User sees an accurate status — not a false open or active state"},
+      {n:"3", a:"Session reconnects",                               e:"System recovers to a known consistent state; pending order state is resolved"},
+      {n:"4", a:"Verify no duplicate order was submitted",          e:"Reconnect replay has not sent the order a second time"},
+    ],
+    criteria:"Order state is consistent and accurate after reconnect; no duplicate sends; no false live status shown to the user.",
+    passSigns:["Order state is unambiguous after reconnect","No duplicate order visible in blotter","User sees accurate status before and after reconnect","Reconnect event and state resolution appear in session log"],
+    failSigns:["False live or open status shown before reconnect","Duplicate order sent on replay","Ambiguous order state after reconnect","Reconnect event missing from logs"],
+    rca:["session_state_detection","recovery_logic","deduplication_defect","order_state_management"],
+    evidence:["session_log","blotter_state","order_id","reconnect_timestamps"],
+    gherkin:`@edge_cases @session @P1
+Feature: Session Drop During Order Submission
+
+  Scenario: Order submitted at the moment the session disconnects
+    Given the QA session is active and healthy
+    When the analyst submits an order at the exact moment the session disconnects
+    Then the order is either blocked, placed in a clearly pending state, or rejected cleanly
+    And the user does not see a false live or open status for the order
+    When the session reconnects
+    Then the order state is consistent and unambiguous
+    And no duplicate order has been sent as a result of the reconnect replay`
+  },
+
+  {
+    id:"EDGE_RACE_110", module:"Edge Cases", priority:"P1", phase:"Edge",
+    name:"Cancel During Fill — Race Condition",
+    steps:[
+      {n:"1", a:"Submit a cancel while a fill is being processed",  e:"System handles both events; final state is logically consistent"},
+      {n:"2", a:"Determine the final order outcome",                e:"Order is one of: Filled, Partially Filled and Canceled, or Canceled with no fill"},
+      {n:"3", a:"Verify quantity arithmetic is intact",             e:"Filled qty plus remaining qty equals original order qty regardless of event order"},
+      {n:"4", a:"Verify audit trail completeness",                  e:"Both the fill event and the cancel event are recorded in the correct sequence"},
+    ],
+    criteria:"Final state is logically valid regardless of event arrival order; quantity math is correct; both events are fully recorded in the audit trail.",
+    passSigns:["Final state is one of: Filled, Partially Filled and Canceled, or Canceled","Quantity arithmetic is correct","Both events recorded in audit trail","No stuck or ambiguous order state"],
+    failSigns:["Order stuck in an intermediate state","Quantity math incorrect after the race","Fill applied after cancel acknowledgment","Either event missing from audit trail"],
+    rca:["state_machine_race","event_ordering_defect","audit_trail_gap","fill_cancel_concurrency"],
+    evidence:["order_history","blotter_final_state","audit_trail","quantity_verification"],
+    gherkin:`@edge_cases @race_condition @P1
+Feature: Cancel and Fill Race Condition
+
+  Scenario: Cancel request arrives while a fill is being processed
+    Given an open buy order for 100 shares with status New
+    And a fill for 60 shares is currently being processed by the system
+    When the analyst submits a cancel request at the same moment
+    Then the system reaches a logically consistent final state
+    And the final status is one of: Filled, Partially Filled and Canceled, or Canceled
+    And the filled quantity plus remaining quantity equals 100
+    And both the fill event and the cancel event are recorded in the audit trail`
+  },
+];
+
+// ═══════════════════════════════════════════════════════════
+// MODULE → pill class
+// ═══════════════════════════════════════════════════════════
+const MODULE_PILL = {
+  Environment:"pill-env", Lifecycle:"pill-lc",
+  Execution:"pill-exec", "Post-Trade":"pill-post", "Edge Cases":"pill-edge"
+};
+const PHASE_COL = {
+  Session:    {c:"#f0883e",b:"rgba(240,136,62,.4)", bg:"rgba(240,136,62,.07)"},
+  Trade:      {c:"#39d3f0",b:"rgba(57,211,240,.4)", bg:"rgba(57,211,240,.07)"},
+  "Post-Trade":{c:"#bc8cff",b:"rgba(188,140,255,.4)",bg:"rgba(188,140,255,.07)"},
+  Edge:       {c:"#e3b341",b:"rgba(227,179,65,.4)",  bg:"rgba(227,179,65,.07)"},
+};
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let activeTab      = 'scenarios';
+let activeScId     = SCENARIOS[0].id;
+let moduleFilter   = 'All';
+let trackerStatus  = {};   // id → 'pass'|'fail'|'skip'|''
+let trackerNotes   = {};   // id → string
+let gwCurrentId    = SCENARIOS[0].id;
+let gwContent      = '';
+let aiMessages     = [];
+let aiStreaming    = false;
+
+// ═══════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════
+function gotoTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  const labels = {scenarios:'scenario',tracker:'tracker',gherkin:'gherkin',ai:'ask'};
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    if (b.textContent.toLowerCase().includes(labels[tab])) b.classList.add('active');
+  });
+  if (tab === 'tracker')  buildTracker();
+  if (tab === 'gherkin')  { gwInitSelect(); gwLoadHistory(); }
+  if (tab === 'ai')       aiLoadHistory();
+}
+
+// ═══════════════════════════════════════════════════════════
+// SCENARIOS PANEL
+// ═══════════════════════════════════════════════════════════
+function buildSidebar() {
+  const modules = ['All', ...new Set(SCENARIOS.map(s => s.module))];
+  let h = `<div class="sc-filter"><div class="filter-lbl">Filter by module</div><div class="chips">`;
+  modules.forEach(m => h += `<span class="chip${m===moduleFilter?' active':''}" onclick="setFilter('${m}')">${m}</span>`);
+  h += `</div></div>`;
+  const list = moduleFilter === 'All' ? SCENARIOS : SCENARIOS.filter(s => s.module === moduleFilter);
+  list.forEach((s, i) => {
+    const pc = PHASE_COL[s.phase] || PHASE_COL.Trade;
+    const active = s.id === activeScId;
+    const mp = MODULE_PILL[s.module] || '';
+    h += `<div class="sc-item${active?' active':''}" onclick="selectSc('${s.id}')">
+      <span class="sc-item-num">${i+1}</span>
+      <div class="sc-item-body">
+        <div class="sc-item-name">${s.name}</div>
+        <div class="sc-item-badges">
+          <span class="pill pill-${s.priority.toLowerCase()}">${s.priority}</span>
+          <span class="pill ${mp}">${s.module}</span>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('sc-sidebar').innerHTML = h;
+}
+
+function setFilter(m) { moduleFilter = m; buildSidebar(); }
+function selectSc(id) { activeScId = id; buildSidebar(); renderSc(); }
+
+function renderSc() {
+  const sc = SCENARIOS.find(s => s.id === activeScId);
+  if (!sc) return;
+  const pc = PHASE_COL[sc.phase] || PHASE_COL.Trade;
+  const mp = MODULE_PILL[sc.module] || '';
+
+  // Lifecycle flow HTML
+  const lcH = sc.steps.map((st, i) => `
+    ${i > 0 ? '<span class="lc-arrow">→</span>' : ''}
+    <div class="lc-step">
+      <div class="lc-step-box" style="color:${pc.c};border-color:${pc.b};background:${pc.bg}">Step ${st.n}</div>
+      <div class="lc-step-lbl">${st.a}</div>
+    </div>`).join('');
+
+  // Steps table
+  const stepsH = sc.steps.map(st =>
+    `<tr><td class="tbl-num">Step ${st.n}</td><td class="tbl-action">${st.a}</td><td class="tbl-exp">${st.e}</td></tr>`
+  ).join('');
+
+  // Gherkin highlight
+  const gkH = sc.gherkin.split('\n').map(line => {
+    if (line.startsWith('@'))                                            return `<span class="gk-tag">${line}</span>`;
+    if (/^(Feature:|Scenario:|Scenario Outline:)/.test(line.trim()))    return `<span class="gk-feat">${line}</span>`;
+    if (/^\s+(Given|When|Then|And|But|Examples:)/.test(line))           return `<span class="gk-kw">${line}</span>`;
+    if (line.trim().startsWith('#'))                                     return `<span class="gk-cmt">${line}</span>`;
+    if (line.trim().startsWith('|'))                                     return `<span class="gk-tbl">${line}</span>`;
+    return `<span class="gk-step">${line}</span>`;
+  }).join('\n');
+
+  document.getElementById('sc-main').innerHTML = `
+    <div class="sc-head">
+      <div class="sc-id">${sc.id}</div>
+      <div class="sc-name">${sc.name}</div>
+      <div class="sc-badges">
+        <span class="pill pill-${sc.priority.toLowerCase()}">${sc.priority}</span>
+        <span class="pill ${mp}">${sc.module}</span>
+        <span class="pill" style="color:${pc.c};border-color:${pc.b};background:${pc.bg}">${sc.phase} Phase</span>
+      </div>
+    </div>
+
+    <div class="lc-flow">
+      <div class="lc-flow-hd">Trade Lifecycle Flow</div>
+      <div class="lc-steps-row">${lcH}</div>
+    </div>
+
+    <div class="card card-accent-o">
+      <div class="card-hd" style="color:var(--orange)">Acceptance Criteria</div>
+      <div class="card-body">${sc.criteria}</div>
+    </div>
+
+    <div class="two-col">
+      <div class="card card-accent-g">
+        <div class="card-hd" style="color:var(--green)">Pass Signs</div>
+        <div class="card-body"><ul>${sc.passSigns.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      </div>
+      <div class="card card-accent-r">
+        <div class="card-hd" style="color:var(--red)">Fail Indicators</div>
+        <div class="card-body"><ul>${sc.failSigns.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      </div>
+      <div class="card card-accent-p">
+        <div class="card-hd" style="color:var(--purple)">RCA Categories</div>
+        <div class="card-body"><ul>${sc.rca.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      </div>
+      <div class="card card-accent-c">
+        <div class="card-hd" style="color:var(--cyan)">Evidence to Collect</div>
+        <div class="card-body"><ul>${sc.evidence.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd" style="color:var(--text2)">Test Steps & Expected Outcomes</div>
+      <table class="tbl">
+        <thead><tr><th>Step</th><th>Action</th><th>Expected Outcome</th></tr></thead>
+        <tbody>${stepsH}</tbody>
+      </table>
+    </div>
+
+    <div style="font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text);margin-bottom:8px;">Gherkin Preview</div>
+    <div class="gk-pre">${gkH}</div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════
+// TRACKER PANEL
+// ═══════════════════════════════════════════════════════════
+function buildTracker() {
+  const total = SCENARIOS.length;
+  const pass  = SCENARIOS.filter(s => trackerStatus[s.id] === 'pass').length;
+  const fail  = SCENARIOS.filter(s => trackerStatus[s.id] === 'fail').length;
+  const skip  = SCENARIOS.filter(s => trackerStatus[s.id] === 'skip').length;
+  const pct   = total ? Math.round((pass / total) * 100) : 0;
+
+  const modules = [...new Set(SCENARIOS.map(s => s.module))];
+  const mpLabels = {Environment:'pill-env',Lifecycle:'pill-lc',Execution:'pill-exec','Post-Trade':'pill-post','Edge Cases':'pill-edge'};
+
+  let sectionsH = modules.map(mod => {
+    const list = SCENARIOS.filter(s => s.module === mod);
+    const rowsH = list.map(sc => {
+      const st   = trackerStatus[sc.id] || '';
+      const pc   = PHASE_COL[sc.phase] || PHASE_COL.Trade;
+      const mp   = MODULE_PILL[sc.module] || '';
+      return `
+        <tr class="trk-row" id="row-${sc.id}" onclick="trkToggle('${sc.id}')">
+          <td><span class="trk-chevron">▶</span></td>
+          <td><span class="trk-id">${sc.id}</span></td>
+          <td>
+            <div class="trk-name">${sc.name}</div>
+            <div style="margin-top:3px;display:flex;gap:4px;">
+              <span class="pill pill-${sc.priority.toLowerCase()}">${sc.priority}</span>
+              <span class="pill" style="color:${pc.c};border-color:${pc.b};background:${pc.bg}">${sc.phase}</span>
+            </div>
+          </td>
+          <td class="trk-crit">${sc.criteria}</td>
+          <td class="status-cell">
+            <button class="sbtn sbtn-pass${st==='pass'?' on':''}" onclick="setStatus(event,'${sc.id}','pass')">Pass</button>
+            <button class="sbtn sbtn-fail${st==='fail'?' on':''}" onclick="setStatus(event,'${sc.id}','fail')">Fail</button>
+            <button class="sbtn sbtn-skip${st==='skip'?' on':''}" onclick="setStatus(event,'${sc.id}','skip')">Skip</button>
+          </td>
+        </tr>
+        <tr class="trk-detail-row" id="detail-${sc.id}">
+          <td colspan="5">
+            <div class="trk-detail-inner">
+              <div class="detail-grid">
+                <div class="detail-box">
+                  <div class="detail-box-hd" style="color:var(--green)">Pass Signs</div>
+                  <div class="detail-box-body"><ul>${sc.passSigns.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+                </div>
+                <div class="detail-box">
+                  <div class="detail-box-hd" style="color:var(--red)">Fail Indicators</div>
+                  <div class="detail-box-body"><ul>${sc.failSigns.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+                </div>
+                <div class="detail-box">
+                  <div class="detail-box-hd" style="color:var(--purple)">RCA Categories</div>
+                  <div class="detail-box-body"><ul>${sc.rca.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+                </div>
+                <div class="detail-box">
+                  <div class="detail-box-hd" style="color:var(--cyan)">Evidence to Collect</div>
+                  <div class="detail-box-body"><ul>${sc.evidence.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+                </div>
+              </div>
+              <div class="detail-gk">${sc.gherkin.split('\n').map(line => {
+                if (line.startsWith('@'))                                         return `<span class="gk-tag">${line}</span>`;
+                if (/^(Feature:|Scenario:|Scenario Outline:)/.test(line.trim())) return `<span class="gk-feat">${line}</span>`;
+                if (/^\s+(Given|When|Then|And|But)/.test(line))                  return `<span class="gk-kw">${line}</span>`;
+                if (line.trim().startsWith('#'))                                  return `<span class="gk-cmt">${line}</span>`;
+                if (line.trim().startsWith('|'))                                  return `<span class="gk-tbl">${line}</span>`;
+                return `<span class="gk-step">${line}</span>`;
+              }).join('\n')}</div>
+              <textarea class="detail-note" placeholder="Test notes, failure description, RCA evidence..." oninput="saveNote('${sc.id}', this.value)">${trackerNotes[sc.id]||''}</textarea>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+
+    return `<div class="trk-section">
+      <div class="trk-section-hd">
+        <span class="pill ${mpLabels[mod]||''}">${mod}</span>
+        <span class="trk-section-title">${mod} Scenarios</span>
+        <span class="trk-section-count">${list.length} scenario${list.length!==1?'s':''}</span>
+      </div>
+      <table class="trk-tbl">
+        <thead><tr><th></th><th>ID</th><th>Scenario</th><th>Acceptance Criteria</th><th>Result</th></tr></thead>
+        <tbody>${rowsH}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+
+  document.getElementById('tracker-wrap').innerHTML = `
+    <div class="progress-bar-row">
+      <div class="pbar"><div class="pbar-fill" style="width:${pct}%"></div></div>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--text2);">${pct}% complete</span>
+      <div class="pbar-stats">
+        <div class="pstat pstat-pass"><span class="pstat-num">${pass}</span><span class="pstat-lbl">Pass</span></div>
+        <div class="pstat pstat-fail"><span class="pstat-num">${fail}</span><span class="pstat-lbl">Fail</span></div>
+        <div class="pstat pstat-skip"><span class="pstat-num">${skip}</span><span class="pstat-lbl">Skip</span></div>
+        <div class="pstat pstat-total"><span class="pstat-num">${total}</span><span class="pstat-lbl">Total</span></div>
+      </div>
+    </div>
+    ${sectionsH}`;
+}
+
+function trkToggle(id) {
+  const row    = document.getElementById('row-' + id);
+  const detail = document.getElementById('detail-' + id);
+  const isOpen = row.classList.contains('expanded');
+  row.classList.toggle('expanded', !isOpen);
+  detail.classList.toggle('open', !isOpen);
+}
+
+function setStatus(e, id, st) {
+  e.stopPropagation();
+  trackerStatus[id] = trackerStatus[id] === st ? '' : st;
+  buildTracker();
+  // Re-open if it was open
+}
+
+function saveNote(id, val) { trackerNotes[id] = val; }
+
+// ═══════════════════════════════════════════════════════════
+// GHERKIN WRITER
+// ═══════════════════════════════════════════════════════════
+function gwInitSelect() {
+  const sel = document.getElementById('gw-select');
+  sel.innerHTML = SCENARIOS.map(s => `<option value="${s.id}">[${s.module}] ${s.name}</option>`).join('');
+  gwCurrentId = sel.value;
+  gwPreview();
+}
+
+function gwPreview() {
+  const id = document.getElementById('gw-select').value;
+  gwCurrentId = id;
+  const sc = SCENARIOS.find(s => s.id === id);
+  if (!sc) return;
+  const mp = MODULE_PILL[sc.module] || '';
+  const pc = PHASE_COL[sc.phase] || PHASE_COL.Trade;
+  document.getElementById('gw-preview-name').textContent = sc.name;
+  document.getElementById('gw-preview-badges').innerHTML =
+    `<span class="pill pill-${sc.priority.toLowerCase()}">${sc.priority}</span>
+     <span class="pill ${mp}">${sc.module}</span>
+     <span class="pill" style="color:${pc.c};border-color:${pc.b};background:${pc.bg}">${sc.phase}</span>`;
+}
+
+function gwGenerate() {
+  const sc = SCENARIOS.find(s => s.id === gwCurrentId);
+  if (!sc) return;
+  let out = sc.gherkin;
+  if (document.getElementById('opt-steps').checked) {
+    out += `\n\n  # Test Steps:\n`;
+    sc.steps.forEach(st => out += `  # Step ${st.n}: ${st.a}\n  #   Expected: ${st.e}\n`);
+  }
+  if (document.getElementById('opt-evidence').checked) {
+    out += `\n  # Evidence to collect:\n`;
+    sc.evidence.forEach(e => out += `  # - ${e}\n`);
+  }
+  if (document.getElementById('opt-rca').checked) {
+    out += `\n  # RCA categories: ${sc.rca.join(', ')}\n`;
+  }
+  out += `\n  # Scenario: ${sc.id} | Priority: ${sc.priority} | Module: ${sc.module}`;
+  out += `\n  # Generated by Bloomberg TradeBook QA Portal`;
+
+  gwContent = out;
+  document.getElementById('gw-editor').value = out;
+  document.getElementById('gw-filename').textContent = `${sc.id.toLowerCase()}.feature`;
+  const lines = out.split('\n').length;
+  const lc = document.getElementById('gw-linecount');
+  lc.textContent = `${lines} lines`; lc.style.display = 'block';
+  document.getElementById('gw-dot').style.background = 'var(--green)';
+  document.getElementById('gw-status').textContent = `${sc.id} · ${sc.module} · ${sc.priority}`;
+  document.getElementById('gw-actions').style.display = 'flex';
+}
+
+function gwCopy() {
+  navigator.clipboard.writeText(document.getElementById('gw-editor').value).then(() => {
+    const btn = document.getElementById('gw-copy-btn');
+    const orig = btn.textContent; btn.textContent = '✓ Copied!';
+    btn.style.color = 'var(--green)'; btn.style.borderColor = 'rgba(63,185,80,.5)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+  });
+}
+
+function gwDownload() {
+  const sc = SCENARIOS.find(s => s.id === gwCurrentId);
+  const fname = sc ? `${sc.id.toLowerCase()}.feature` : 'scenario.feature';
+  const blob = new Blob([document.getElementById('gw-editor').value], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = fname; a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function gwSave() {
+  const sc = SCENARIOS.find(s => s.id === gwCurrentId);
+  const content = document.getElementById('gw-editor').value;
+  try {
+    await fetch('/api/gherkin', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({scenario_id: gwCurrentId, title: sc?.name || 'Untitled', content})});
+    showToast('Saved!');
+    gwLoadHistory();
+  } catch(e) { showToast('Save failed'); }
+}
+
+async function gwLoadHistory() {
+  try {
+    const r = await fetch('/api/gherkin');
+    const files = await r.json();
+    const list = document.getElementById('gw-hist-list');
+    document.getElementById('gw-hist-wrap').style.display = 'block';
+    if (!files.length) { list.innerHTML = '<div style="font-size:10px;color:var(--text);padding:4px 0">No saved files</div>'; return; }
+    list.innerHTML = files.map(f => `
+      <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid var(--border);background:var(--bg);">
+        <span style="flex:1;font-family:var(--mono);font-size:10px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.title}</span>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text)">${f.created_at}</span>
+        <button onclick="gwLoad('${f.id}')" style="font-size:9px;padding:2px 6px;border:1px solid var(--border2);background:transparent;color:var(--cyan);cursor:pointer;font-family:var(--mono)">Load</button>
+        <button onclick="gwDel('${f.id}')" style="background:none;border:none;color:var(--text);cursor:pointer;font-size:12px">×</button>
+      </div>`).join('');
+  } catch(e) {}
+}
+
+async function gwLoad(id) {
+  try {
+    const r = await fetch(`/api/gherkin/${id}`);
+    const f = await r.json();
+    document.getElementById('gw-editor').value = f.content;
+    document.getElementById('gw-filename').textContent = `${f.scenario_id.toLowerCase()}.feature`;
+    document.getElementById('gw-dot').style.background = 'var(--green)';
+    document.getElementById('gw-status').textContent = `Loaded: ${f.title}`;
+    document.getElementById('gw-actions').style.display = 'flex';
+  } catch(e) {}
+}
+
+async function gwDel(id) {
+  await fetch(`/api/gherkin/${id}`, {method:'DELETE'});
+  gwLoadHistory();
+}
+
+async function gwAiGenerate() {
+  const desc = document.getElementById('gw-ai-desc').value.trim();
+  if (!desc) { showToast('Enter a scenario description first'); return; }
+
+  const btn = document.getElementById('gw-ai-btn');
+  btn.disabled = true;
+  btn.textContent = '⟳ Generating…';
+
+  const editor = document.getElementById('gw-editor');
+  editor.value = '';
+  document.getElementById('gw-dot').style.background = 'var(--yellow)';
+  document.getElementById('gw-status').textContent = 'AI generating…';
+  document.getElementById('gw-actions').style.display = 'none';
+  document.getElementById('gw-filename').textContent = 'ai-generated.feature';
+  const lc = document.getElementById('gw-linecount');
+  lc.textContent = ''; lc.style.display = 'none';
+
+  let fullText = '';
+  try {
+    const resp = await fetch('/api/gherkin/generate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({description: desc})
+    });
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value);
+      for (const line of chunk.split('\n')) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+        if (raw === '[DONE]') break;
+        try {
+          const obj = JSON.parse(raw);
+          if (obj.error) { showToast('AI error: ' + obj.error); break; }
+          if (obj.text) {
+            fullText += obj.text;
+            editor.value = fullText;
+            editor.scrollTop = editor.scrollHeight;
+            lc.textContent = fullText.split('\n').length + ' lines';
+            lc.style.display = 'block';
+          }
+        } catch(e) {}
+      }
+    }
+
+    gwContent = fullText;
+    gwCurrentId = 'ai-generated';
+    document.getElementById('gw-dot').style.background = 'var(--green)';
+    document.getElementById('gw-status').textContent = 'AI-generated · Gherkin · ready';
+    document.getElementById('gw-actions').style.display = 'flex';
+  } catch(e) {
+    showToast('Generation failed — check server logs');
+    document.getElementById('gw-dot').style.background = 'var(--red)';
+    document.getElementById('gw-status').textContent = 'Generation failed';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✦ Generate with AI';
+}
+
+// ═══════════════════════════════════════════════════════════
+// ASK AI
+// ═══════════════════════════════════════════════════════════
+function aiAppendMsg(role, content, isHTML=false) {
+  const container = document.getElementById('ai-msgs');
+  const wrap = document.createElement('div');
+  wrap.className = `msg-wrap ${role==='user'?'user':''}`;
+  const avCls   = role === 'user' ? 'av-qa' : 'av-ai';
+  const avLabel = role === 'user' ? 'QA'   : 'AI';
+  const bubCls  = role === 'user' ? 'user' : 'ai';
+  const bodyHtml = isHTML ? content
+    : (role === 'assistant' ? marked.parse(content) : `<p>${content}</p>`);
+  wrap.innerHTML = `<div class="msg-avatar ${avCls}">${avLabel}</div><div class="msg-bubble ${bubCls}">${bodyHtml}</div>`;
+  container.appendChild(wrap);
+  container.scrollTop = container.scrollHeight;
+  return wrap.querySelector('.msg-bubble');
+}
+
+function aiShowTyping() {
+  const container = document.getElementById('ai-msgs');
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrap'; wrap.id = 'ai-typing';
+  wrap.innerHTML = `<div class="msg-avatar av-ai">AI</div><div class="msg-bubble ai"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
+  container.appendChild(wrap);
+  container.scrollTop = container.scrollHeight;
+}
+function aiRemoveTyping() { const el = document.getElementById('ai-typing'); if (el) el.remove(); }
+
+async function aiSend() {
+  const input = document.getElementById('ai-input');
+  const text = input.value.trim();
+  if (!text || aiStreaming) return;
+  input.value = '';
+  aiStreaming = true;
+  document.getElementById('send-btn').disabled = true;
+  aiMessages.push({role:'user', content:text});
+  aiAppendMsg('user', text);
+  aiShowTyping();
+  try {
+    const resp = await fetch('/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({messages: aiMessages})
+    });
+    aiRemoveTyping();
+    if (!resp.ok) { aiAppendMsg('assistant','Server error — is the API key set?'); aiStreaming=false; document.getElementById('send-btn').disabled=false; return; }
+    const bubble = aiAppendMsg('assistant','',true);
+    bubble.innerHTML = '';
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let full = '';
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      for (const line of dec.decode(value).split('\n')) {
+        if (!line.startsWith('data:')) continue;
+        const d = line.slice(5).trim();
+        if (d === '[DONE]') break;
+        try { const p = JSON.parse(d); if (p.text) { full += p.text; bubble.innerHTML = marked.parse(full); } } catch(e){}
+      }
+      document.getElementById('ai-msgs').scrollTop = document.getElementById('ai-msgs').scrollHeight;
+    }
+    aiMessages.push({role:'assistant', content:full});
+  } catch(e) {
+    aiRemoveTyping();
+    aiAppendMsg('assistant','Connection error. Make sure the server is running.');
+  }
+  aiStreaming = false;
+  document.getElementById('send-btn').disabled = false;
+}
+
+function aiKey(e) { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); aiSend(); } }
+function qp(text) { document.getElementById('ai-input').value = text; gotoTab('ai'); aiSend(); }
+
+async function aiSave() {
+  if (!aiMessages.length) return;
+  const title = aiMessages[0]?.content?.slice(0,60) || 'QA Chat';
+  try {
+    await fetch('/api/history', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({title, messages: aiMessages})});
+    showToast('Conversation saved!');
+    aiLoadHistory();
+  } catch(e) { showToast('Save failed'); }
+}
+
+async function aiLoadHistory() {
+  try {
+    const r = await fetch('/api/history');
+    const items = await r.json();
+    const list = document.getElementById('ai-hist-list');
+    if (!items.length) { list.innerHTML = '<div style="font-size:10px;color:var(--text);padding:8px 14px">No saved conversations</div>'; return; }
+    list.innerHTML = items.map(i => `
+      <div class="hist-item">
+        <span class="hist-name" onclick="aiLoadConv('${i.id}')">${i.title}</span>
+        <span class="hist-date">${i.created_at}</span>
+        <button class="hist-del" onclick="aiDelConv('${i.id}')">×</button>
+      </div>`).join('');
+  } catch(e) {}
+}
+
+async function aiLoadConv(id) {
+  try {
+    const r = await fetch(`/api/history/${id}`);
+    const data = await r.json();
+    aiMessages = data.messages || [];
+    document.getElementById('ai-msgs').innerHTML = '';
+    aiMessages.forEach(m => aiAppendMsg(m.role, m.content));
+  } catch(e) {}
+}
+
+async function aiDelConv(id) {
+  await fetch(`/api/history/${id}`, {method:'DELETE'});
+  aiLoadHistory();
+}
+
+function aiClear() {
+  aiMessages = [];
+  document.getElementById('ai-msgs').innerHTML = '';
+  aiAppendMsg('assistant','Chat cleared. Ask me anything about TradeBook QA scenarios, trade lifecycle, or Gherkin.');
+}
+
+// ═══════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+buildSidebar();
+renderSc();
+</script>
+</body>
+</html>
