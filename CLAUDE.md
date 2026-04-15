@@ -6,8 +6,9 @@ An AI-powered learning and Gherkin-authoring portal for Bloomberg TradeBook QA a
 Covers the full equity trade lifecycle with FIX Protocol grounding and Claude-powered chat.
 
 - **Owner:** Ken Jiang
+- **Live URL:** https://tradebook-qa-portal.onrender.com
 - **Companion project:** github.com/ken-jiang-claude/fix-protocol-tool
-- **Version:** 1.0
+- **Version:** 1.1
 
 ---
 

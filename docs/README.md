@@ -3,6 +3,7 @@
 An AI-powered learning and Gherkin-authoring tool for Bloomberg TradeBook QA analysts.
 Covers the full equity trade lifecycle, FIX Protocol message flows, and Gherkin .feature file generation.
 
+**Live:** https://tradebook-qa-portal.onrender.com
 **Companion project:** [fix-protocol-tool](https://github.com/ken-jiang-claude/fix-protocol-tool)
 
 ---

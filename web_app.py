@@ -191,6 +191,8 @@ def delete_history(conv_id):
 # Routes — Gherkin file save/load
 # ---------------------------------------------------------------------------
 
+FEATURES_DIR = os.path.join(os.path.dirname(__file__), "features")
+
 @app.route("/api/gherkin", methods=["POST"])
 def save_gherkin():
     data = request.get_json()
@@ -204,6 +206,12 @@ def save_gherkin():
             "INSERT INTO gherkin_files VALUES (?, ?, ?, ?, ?)",
             (file_id, scenario_id, title, content, created_at),
         )
+    # Also write to features/ so the file is visible in the repo
+    safe_name = "".join(c if c.isalnum() or c in "-_" else "_" for c in scenario_id.lower())
+    feature_path = os.path.join(FEATURES_DIR, f"{safe_name}.feature")
+    os.makedirs(FEATURES_DIR, exist_ok=True)
+    with open(feature_path, "w", encoding="utf-8") as f:
+        f.write(content)
     return jsonify({"id": file_id, "title": title, "created_at": created_at})
 
 @app.route("/api/gherkin", methods=["GET"])
