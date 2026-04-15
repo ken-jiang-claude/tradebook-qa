@@ -1,0 +1,106 @@
+name: TradeBook QA — Cucumber Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'Test profile to run'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - lifecycle
+          - environment
+          - default
+
+jobs:
+  cucumber-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cucumber-tests
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: cucumber-tests/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      # ── Start the mock UI so Playwright can hit it ───────────
+      - name: Install mock UI dependencies
+        working-directory: tradebook-mock
+        run: npm install
+
+      - name: Build mock UI
+        working-directory: tradebook-mock
+        run: npm run build
+
+      - name: Serve mock UI
+        working-directory: tradebook-mock
+        run: npx vite preview --port 4000 &
+
+      - name: Wait for mock UI to be ready
+        run: npx wait-on http://localhost:4000 --timeout 30000
+
+      # ── Run tests ────────────────────────────────────────────
+      - name: Run Cucumber tests
+        env:
+          TB_BASE_URL:      'http://localhost:4000'
+          TB_USERNAME:      ${{ secrets.TB_USERNAME || 'qa' }}
+          TB_PASSWORD:      ${{ secrets.TB_PASSWORD || 'qa' }}
+          TB_TEST_ACCOUNT:  ${{ secrets.TB_TEST_ACCOUNT || 'ACC-001' }}
+          TB_TEST_SYMBOL:   ${{ secrets.TB_TEST_SYMBOL || 'AAPL' }}
+          HEADLESS:         'true'
+          BROWSER:          'chromium'
+        run: npm run test:${{ github.event.inputs.profile || 'smoke' }}
+
+      # ── Generate rich HTML report ────────────────────────────
+      - name: Generate HTML report
+        if: always()
+        run: node scripts/generate-report.js
+
+      # ── Commit report back to repo so Render can serve it ───
+      - name: Commit updated report
+        if: always() && github.ref == 'refs/heads/main'
+        working-directory: .
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add cucumber-tests/reports/report.html
+          git diff --staged --quiet || git commit -m "ci: update living docs report [skip ci]"
+          git push
+
+      # ── Upload artifacts ─────────────────────────────────────
+      - name: Upload HTML report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-report-${{ github.run_number }}
+          path: cucumber-tests/reports/
+          retention-days: 30
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-screenshots-${{ github.run_number }}
+          path: cucumber-tests/reports/screenshots/
+          retention-days: 14
