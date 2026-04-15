@@ -1,10 +1,11 @@
-# TradeBook QA — BDD Automation Suite
+# TradeBook QA — Learning Portal
 
 **Author:** Ken Jiang  
-**Stack:** Vue 3 · Cucumber-js · Playwright · GitHub Actions · Render  
+**Stack:** Python · Flask · Claude (claude-haiku-4-5) · SQLite · Vanilla JS  
 
 | | |
 |---|---|
+| **QA Learning Portal** | https://tradebook-qa-portal.onrender.com |
 | Live Blotter UI | https://tradebook-mock.onrender.com |
 | Living Test Docs | https://tradebook-docs.onrender.com |
 | Repo | https://github.com/ken-jiang-claude/tradebook-qa |
@@ -13,9 +14,15 @@
 
 ## What This Project Is
 
-A fully automated BDD test suite for a mock Bloomberg TradeBook equity trading system. It demonstrates end-to-end QA engineering across the full order lifecycle — from order entry through settlement and reconciliation.
+An AI-powered learning and Gherkin-authoring portal for Bloomberg TradeBook QA analysts. Covers the full equity trade lifecycle with FIX Protocol grounding and Claude-powered chat.
 
-**56 scenarios · 457 steps · 100% passing**
+| Tab | What you get |
+|---|---|
+| **Learn** | 9 QA scenarios with FIX message flows, pass/fail signs, acceptance criteria, and Gherkin previews |
+| **Gherkin Writer** | Template-based generator + AI generator — describe a test in plain English, get a `.feature` file instantly |
+| **Ask AI** | Claude-powered chat for FIX tags, OrdStatus transitions, Gherkin syntax, and RCA guidance |
+
+> The BDD Automation Suite (Cucumber-js + Playwright) is preserved on the [`bdd-automation-suite`](https://github.com/ken-jiang-claude/tradebook-qa/tree/bdd-automation-suite) branch.
 
 ---
 
